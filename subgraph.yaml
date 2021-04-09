@@ -19,8 +19,20 @@ dataSources:
         - name: VisorFactory
           file: ./abis/VisorFactory.json
       eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
         - event: InstanceAdded(address)
           handler: handleInstanceAdded
+        - event: InstanceRemoved(address)
+          handler: handleInstanceRemoved
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: TemplateActive(indexed bytes32,indexed address)
+          handler: handleTemplateActive
         - event: TemplateAdded(indexed bytes32,indexed address)
           handler: handleTemplateAdded
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
       file: ./src/mapping.ts

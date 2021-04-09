@@ -1,15 +1,32 @@
+type Factory @entity {
+    id: ID!
+    owner: Bytes!
+}
+
 type VisorTemplate @entity {
   id: ID!
   address: Bytes!
+  active: Boolean!
 }
 
 type User @entity {
   id: ID!
-  visors: [VisorInstance!]! @derivedFrom(field: "owner")
+  visorsOwned: [VisorInstance!] @derivedFrom(field: "owner")  # Visors owned by this user
+  visorsApproved: [VisorInstance!] @derivedFrom(field: "operator")  # Visors where this user is approved as an operator
+  operators: [OwnerOperator!] @derivedFrom(field: "operator")  # Operators this users delegates to
+  operatorFor: [OwnerOperator!] @derivedFrom(field: "owner")   # Other users that this user is an operator for
+}
+
+type OwnerOperator @entity {
+  id: ID!
+  owner: User!
+  operator: User!
+  approved: Boolean!
 }
 
 type VisorInstance @entity {
-  id: ID!
-  owner: User!
-  tokenId: BigInt!
+    id: ID!
+    owner: User!
+    operator: User
+    tokenId: BigInt!
 }
