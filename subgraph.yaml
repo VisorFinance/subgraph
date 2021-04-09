@@ -1,0 +1,26 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: VisorFactory
+    network: mainnet
+    source:
+      address: "0xae03233307865623aaef76da9ade669b86e6f20a"
+      abi: VisorFactory
+      startBlock: 12013637
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - VisorInstance
+      abis:
+        - name: VisorFactory
+          file: ./abis/VisorFactory.json
+      eventHandlers:
+        - event: InstanceAdded(address)
+          handler: handleInstanceAdded
+        - event: TemplateAdded(indexed bytes32,indexed address)
+          handler: handleTemplateAdded
+      file: ./src/mapping.ts

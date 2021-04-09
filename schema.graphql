@@ -1,0 +1,15 @@
+type VisorTemplate @entity {
+  id: ID!
+  address: Bytes!
+}
+
+type User @entity {
+  id: ID!
+  visors: [VisorInstance!]! @derivedFrom(field: "owner")
+}
+
+type VisorInstance @entity {
+  id: ID!
+  owner: User!
+  tokenId: BigInt!
+}
