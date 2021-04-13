@@ -14,7 +14,11 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
+        - Factory
         - VisorInstance
+        - Visor
+        - User
+        - OwnerOperator
       abis:
         - name: VisorFactory
           file: ./abis/VisorFactory.json
@@ -35,4 +39,40 @@ dataSources:
           handler: handleTemplateAdded
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-      file: ./src/mapping.ts
+      file: ./src/mappings/visorfactory.ts
+  - kind: ethereum/contract
+    name: DAI-Hypervisor
+    network: mainnet
+    source:
+      address: "0xF178d88D2F6F97CA32F92b465987068e1Cce41c5"
+      abi: Hypervisor
+      startBlock: 12108493
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Hypervisor
+      abis:
+        - name: Hypervisor
+          file: ./abis/Hypervisor.json
+      eventHandlers:
+        - event: BonusTokenRegistered(address)
+          handler: handleBonusTokenRegistered
+        - event: HypervisorCreated(address,address)
+          handler: handleHypervisorCreated
+        - event: HypervisorFunded(uint256,uint256)
+          handler: handleHypervisorFunded
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RewardClaimed(address,address,address,uint256)
+          handler: handleRewardClaimed
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: VaultFactoryRegistered(address)
+          handler: handleVaultFactoryRegistered
+        - event: VaultFactoryRemoved(address)
+          handler: handleVaultFactoryRemoved
+      file: ./src/mappings/hypervisor.ts

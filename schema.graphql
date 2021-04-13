@@ -30,3 +30,15 @@ type VisorInstance @entity {
     operator: User
     tokenId: BigInt!
 }
+
+type Hypervisor @entity {
+  id: ID!
+  owner: Bytes!
+  stakingToken: Bytes
+  rewardToken: Bytes
+  rewardPool: Bytes
+  rewardPoolAmount: BigInt
+  powerSwitch: Bytes
+  BonusTokens: [Bytes!]
+  vaultFactory: Factory
+}
