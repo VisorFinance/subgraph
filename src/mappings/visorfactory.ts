@@ -14,13 +14,13 @@ import {
 	Factory,
 	User,
 	OwnerOperator,
-	VisorInstance,
+	Visor,
 	VisorTemplate
 } from "../../generated/schema"
 
 export function handleApproval(event: Approval): void {
 	let visorId = event.params.tokenId.toHex()
-	let visor = VisorInstance.load(visorId)
+	let visor = Visor.load(visorId)
 	visor.operator = event.params.approved.toHex()
 	visor.save()
 }
@@ -43,7 +43,7 @@ export function handleInstanceAdded(event: InstanceAdded): void {
 	}
 	user.save()
 
-	let visor = new VisorInstance(event.params.instance.toHex())
+	let visor = new Visor(event.params.instance.toHex())
 	visor.owner = owner.toHex()
 	let visorFactory = VisorFactory.bind(event.address)
 	let vaultIndex = visorFactory.vaultCount(owner) - BigInt.fromI32(1)
@@ -52,7 +52,7 @@ export function handleInstanceAdded(event: InstanceAdded): void {
 }
 
 export function handleInstanceRemoved(event: InstanceRemoved): void {
-	store.remove('VisorInstance', event.params.instance.toHex())
+	store.remove('Visor', event.params.instance.toHex())
 }
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
@@ -80,9 +80,9 @@ export function handleTemplateAdded(event: TemplateAdded): void {
 
 export function handleTransfer(event: Transfer): void {
 	let visorId = event.params.tokenId.toHex()
-	let visor = VisorInstance.load(visorId)
+	let visor = Visor.load(visorId)
 	if (visor == null) {
-		visor = new VisorInstance(visorId)
+		visor = new Visor(visorId)
 		visor.tokenId = event.params.tokenId
 	}
 	visor.owner = event.params.to.toHex()

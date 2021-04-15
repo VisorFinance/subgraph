@@ -15,8 +15,8 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Factory
-        - VisorInstance
         - Visor
+        - VisorTemplate
         - User
         - OwnerOperator
       abis:
@@ -53,6 +53,122 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Hypervisor
+        - StakedToken
+        - RewardToken
+      abis:
+        - name: Hypervisor
+          file: ./abis/Hypervisor.json
+      eventHandlers:
+        - event: BonusTokenRegistered(address)
+          handler: handleBonusTokenRegistered
+        - event: HypervisorCreated(address,address)
+          handler: handleHypervisorCreated
+        - event: HypervisorFunded(uint256,uint256)
+          handler: handleHypervisorFunded
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RewardClaimed(address,address,address,uint256)
+          handler: handleRewardClaimed
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: VaultFactoryRegistered(address)
+          handler: handleVaultFactoryRegistered
+        - event: VaultFactoryRemoved(address)
+          handler: handleVaultFactoryRemoved
+      file: ./src/mappings/hypervisor.ts
+  - kind: ethereum/contract
+    name: USDC-Hypervisor
+    network: mainnet
+    source:
+      address: "0x96C105E9e9eAb36eb8e2f851A5dabFbBd397c085"
+      abi: Hypervisor
+      startBlock: 12108420
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Hypervisor
+        - StakedToken
+        - RewardToken
+      abis:
+        - name: Hypervisor
+          file: ./abis/Hypervisor.json
+      eventHandlers:
+        - event: BonusTokenRegistered(address)
+          handler: handleBonusTokenRegistered
+        - event: HypervisorCreated(address,address)
+          handler: handleHypervisorCreated
+        - event: HypervisorFunded(uint256,uint256)
+          handler: handleHypervisorFunded
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RewardClaimed(address,address,address,uint256)
+          handler: handleRewardClaimed
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: VaultFactoryRegistered(address)
+          handler: handleVaultFactoryRegistered
+        - event: VaultFactoryRemoved(address)
+          handler: handleVaultFactoryRemoved
+      file: ./src/mappings/hypervisor.ts
+  - kind: ethereum/contract
+    name: USDT-Hypervisor
+    network: mainnet
+    source:
+      address: "0xEBaE3CB14CE6C2F26B40b747fd92cCaf03B98659"
+      abi: Hypervisor
+      startBlock: 12108439
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Hypervisor
+        - StakedToken
+        - RewardToken
+      abis:
+        - name: Hypervisor
+          file: ./abis/Hypervisor.json
+      eventHandlers:
+        - event: BonusTokenRegistered(address)
+          handler: handleBonusTokenRegistered
+        - event: HypervisorCreated(address,address)
+          handler: handleHypervisorCreated
+        - event: HypervisorFunded(uint256,uint256)
+          handler: handleHypervisorFunded
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RewardClaimed(address,address,address,uint256)
+          handler: handleRewardClaimed
+        - event: Staked(address,uint256)
+          handler: handleStaked
+        - event: Unstaked(address,uint256)
+          handler: handleUnstaked
+        - event: VaultFactoryRegistered(address)
+          handler: handleVaultFactoryRegistered
+        - event: VaultFactoryRemoved(address)
+          handler: handleVaultFactoryRemoved
+      file: ./src/mappings/hypervisor.ts
+  - kind: ethereum/contract
+    name: VISR-ETH-Hypervisor
+    network: mainnet
+    source:
+      address: "0x64fcDD0DE44f4bd04c039B0664FB95EF033D4efb"
+      abi: Hypervisor
+      startBlock: 12108528
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Hypervisor
+        - StakedToken
+        - RewardToken
       abis:
         - name: Hypervisor
           file: ./abis/Hypervisor.json

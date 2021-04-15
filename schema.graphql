@@ -3,6 +3,28 @@ type Factory @entity {
     owner: Bytes!
 }
 
+type Hypervisor @entity {
+  id: ID!
+  owner: Bytes!
+  stakingToken: Bytes
+  totalStakedAmount: BigInt
+  rewardToken: Bytes
+  rewardPool: Bytes
+  rewardPoolAmount: BigInt
+  powerSwitch: Bytes
+  bonusTokens: [Bytes!]
+  vaultFactory: Factory
+}
+
+type Visor @entity {
+    id: ID!
+    owner: User!
+    operator: User
+    tokenId: BigInt!
+    staked: [StakedToken!] @derivedFrom(field: "visor")
+    rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
+}
+
 type VisorTemplate @entity {
   id: ID!
   address: Bytes!
@@ -11,8 +33,8 @@ type VisorTemplate @entity {
 
 type User @entity {
   id: ID!
-  visorsOwned: [VisorInstance!] @derivedFrom(field: "owner")  # Visors owned by this user
-  visorsApproved: [VisorInstance!] @derivedFrom(field: "operator")  # Visors where this user is approved as an operator
+  visorsOwned: [Visor!] @derivedFrom(field: "owner")  # Visors owned by this user
+  visorsApproved: [Visor!] @derivedFrom(field: "operator")  # Visors where this user is approved as an operator
   operators: [OwnerOperator!] @derivedFrom(field: "operator")  # Operators this users delegates to
   operatorFor: [OwnerOperator!] @derivedFrom(field: "owner")   # Other users that this user is an operator for
 }
@@ -24,21 +46,16 @@ type OwnerOperator @entity {
   approved: Boolean!
 }
 
-type VisorInstance @entity {
-    id: ID!
-    owner: User!
-    operator: User
-    tokenId: BigInt!
+type StakedToken @entity {
+    id: ID!  # Vault address-Token address
+    token: Bytes!
+    visor: Visor!
+    amount: BigInt!
 }
 
-type Hypervisor @entity {
-  id: ID!
-  owner: Bytes!
-  stakingToken: Bytes
-  rewardToken: Bytes
-  rewardPool: Bytes
-  rewardPoolAmount: BigInt
-  powerSwitch: Bytes
-  BonusTokens: [Bytes!]
-  vaultFactory: Factory
+type RewardedToken @entity {
+    id: ID!  # Vault address-Token address
+    token: Bytes!
+    visor: Visor!
+    amount: BigInt!
 }
