@@ -1,4 +1,4 @@
-import { store, BigInt } from '@graphprotocol/graph-ts'
+import { log, store, BigInt } from '@graphprotocol/graph-ts'
 import { 
 	VisorFactory,
 	Approval,
@@ -47,7 +47,16 @@ export function handleInstanceAdded(event: InstanceAdded): void {
 	visor.owner = owner.toHex()
 	let visorFactory = VisorFactory.bind(event.address)
 	let vaultIndex = visorFactory.vaultCount(owner) - BigInt.fromI32(1)
-	visor.tokenId = visorFactory.tokenOfOwnerByIndex(owner, vaultIndex)
+	if (vaultIndex > BigInt.fromI32(0)) {
+		let callResult = visorFactory.try_tokenOfOwnerByIndex(owner, vaultIndex)
+		if (callResult.reverted) {
+			log.info("tokenOfOwnerByIndex reverted.", [])
+		} else {
+			visor.tokenId = callResult.value
+		}
+	} else {
+		log.debug("vaultIndex is less than 1.", [])
+	}
 	visor.save()
 }
 

@@ -1,4 +1,4 @@
-import { log, store, Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { 
 	Hypervisor as HyperVisorContract,
 	BonusTokenRegistered,

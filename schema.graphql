@@ -1,3 +1,11 @@
+type VisrToken @entity {
+  id: ID!
+  name: String!
+  decimals: Int!
+  totalSupply: BigInt!
+  staked: BigInt!
+}
+
 type Factory @entity {
     id: ID!
     owner: Bytes!
@@ -20,7 +28,7 @@ type Visor @entity {
     id: ID!
     owner: User!
     operator: User
-    tokenId: BigInt!
+    tokenId: BigInt
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
 }
@@ -58,4 +66,77 @@ type RewardedToken @entity {
     token: Bytes!
     visor: Visor!
     amount: BigInt!
+}
+
+type Token @entity {
+  # token address
+  id: ID!
+  # token symbol
+  symbol: String!
+  # token name
+  name: String!
+  # token decimals
+  decimals: BigInt!
+}
+
+type UniswapV3Pool @entity {
+  # Pool address
+  id: ID!
+  token0: Token!
+  token1: Token!
+  # Fee tier: 50, 3000, 10000
+  fee: Int!
+}
+
+type UniswapV3Hypervisor @entity {
+  # Hypervisor address
+  id: ID!
+  owner: Bytes!
+  symbol: String!
+  pool: UniswapV3Pool!
+  # Lower tick of base position
+  baseLower: Int!
+  # Upper tick of base position
+  baseUpper: Int!
+  # Lower tick of limit position
+  limitLower: Int!
+  # Upper tick of limit position
+  limitUpper: Int!
+  deposits: [UniswapV3Deposit!]! @derivedFrom(field: "hypervisor")
+  rebalances: [UniswapV3Rebalance!]! @derivedFrom(field: "hypervisor")
+  withdraws: [UniswapV3Withdraw!]! @derivedFrom(field: "hypervisor")
+}
+
+type UniswapV3Deposit @entity {
+  id: ID!
+  hypervisor: UniswapV3Hypervisor!
+  timestamp: BigInt!
+  sender: Bytes!
+  to: Bytes!
+  shares: BigInt!
+  amount0: BigInt!
+  amount1: BigInt!
+}
+
+type UniswapV3Rebalance @entity {
+  id: ID!
+  hypervisor: UniswapV3Hypervisor!
+  timestamp: BigInt!
+  tick: BigInt!
+  totalAmount0: BigInt!
+  totalAmount1: BigInt!
+  feeAmount0: BigInt!
+  feeAmount1: BigInt!
+  totalSupply: BigInt!
+}
+
+type UniswapV3Withdraw @entity {
+  id: ID!
+  hypervisor: UniswapV3Hypervisor!
+  timestamp: BigInt!
+  sender: Bytes!
+  to: Bytes!
+  shares: BigInt!
+  amount0: BigInt!
+  amount1: BigInt!
 }
