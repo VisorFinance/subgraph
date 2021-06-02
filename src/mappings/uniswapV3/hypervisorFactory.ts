@@ -3,22 +3,19 @@ import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Hypervisor"
 import { ERC20 as ERC20Contract } from "../../../generated/UniswapV3HypervisorFactory/ERC20"
 import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"
-import { Token, UniswapV3Pool, UniswapV3Hypervisor } from "../../../generated/schema"
-import { fetchTokenDecimals } from "../../utils/tokens"
+import { Token, UniswapV3Pool, UniswapV3Hypervisor, UniswapV3HypervisorFactory } from "../../../generated/schema"
+import { createToken, fetchTokenDecimals } from "../../utils/tokens"
+import { ZERO_BI, ONE_BI } from "../../utils/constants"
 
-function createToken(tokenAddress: Address): Token {
-
-	let contract = ERC20Contract.bind(tokenAddress)
-
-	let token = new Token(tokenAddress.toHex())
-	token.symbol = contract.symbol()
-	token.name = contract.name()
-	token.decimals = fetchTokenDecimals(tokenAddress)
-
-	return token
-}
 
 export function handleHypervisorCreated(event: HypervisorCreated): void {
+
+	let factory = UniswapV3HypervisorFactory.load(event.address.toHexString())
+	if (factory == null) {
+		factory = new UniswapV3HypervisorFactory(event.address.toHexString())
+		factory.hypervisorCount = ZERO_BI
+	}
+	factory.hypervisorCount += ONE_BI
 
 	let hypervisorContract = HypervisorContract.bind(event.params.hypervisor)
 
@@ -43,9 +40,12 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
   	hypervisor.baseUpper = hypervisorContract.baseUpper()
   	hypervisor.limitLower = hypervisorContract.limitLower()
   	hypervisor.limitUpper = hypervisorContract.limitUpper()
+  	hypervisor.totalFees0 = ZERO_BI
+  	hypervisor.totalFees1 = ZERO_BI
   	token0.save()
   	token1.save()
   	pool.save()
   	hypervisor.save()
+  	factory.save()
 	HypervisorTemplate.create(event.params.hypervisor)
 }

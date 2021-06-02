@@ -3,6 +3,27 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: VisrToken
+    network: mainnet
+    source:
+      address: "0xF938424F7210f31dF2Aee3011291b658f872e91e"
+      abi: ERC20
+      startBlock: 12025310
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - VisrToken
+        - Visor
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mappings/visrToken.ts
+  - kind: ethereum/contract
     name: VisorFactory
     network: mainnet
     source:
@@ -41,7 +62,7 @@ dataSources:
           handler: handleTemplateAdded
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-      file: ./src/mappings/visorfactory.ts
+      file: ./src/mappings/visorFactory.ts
   - kind: ethereum/contract
     name: DAI-Hypervisor
     network: mainnet

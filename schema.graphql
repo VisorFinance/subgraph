@@ -88,9 +88,17 @@ type UniswapV3Pool @entity {
   fee: Int!
 }
 
+type UniswapV3HypervisorFactory @entity {
+  # Hypervisor address
+  id: ID!
+  hypervisorCount: BigInt!
+  hypervisors: [UniswapV3Hypervisor!]! @derivedFrom(field: "factory")
+}
+
 type UniswapV3Hypervisor @entity {
   # Hypervisor address
   id: ID!
+  factory: UniswapV3HypervisorFactory!
   owner: Bytes!
   symbol: String!
   pool: UniswapV3Pool!
@@ -102,6 +110,8 @@ type UniswapV3Hypervisor @entity {
   limitLower: Int!
   # Upper tick of limit position
   limitUpper: Int!
+  totalFees0: BigInt!
+  totalFees1: BigInt!
   deposits: [UniswapV3Deposit!]! @derivedFrom(field: "hypervisor")
   rebalances: [UniswapV3Rebalance!]! @derivedFrom(field: "hypervisor")
   withdraws: [UniswapV3Withdraw!]! @derivedFrom(field: "hypervisor")

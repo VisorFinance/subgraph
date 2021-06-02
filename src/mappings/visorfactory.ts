@@ -10,13 +10,7 @@ import {
 	TemplateAdded,
 	Transfer
 } from "../../generated/VisorFactory/VisorFactory"
-import {
-	Factory,
-	User,
-	OwnerOperator,
-	Visor,
-	VisorTemplate
-} from "../../generated/schema"
+import { Factory, User,	OwnerOperator, Visor, VisorTemplate } from "../../generated/schema"
 
 export function handleApproval(event: Approval): void {
 	let visorId = event.params.tokenId.toHex()

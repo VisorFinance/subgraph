@@ -34,6 +34,12 @@ export function handleRebalance(event: RebalanceEvent): void {
 	rebalance.feeAmount1 = event.params.feeAmount1
 	rebalance.totalSupply = event.params.totalSupply
 	rebalance.save()
+
+	let hypervisor = UniswapV3Hypervisor.load(event.address.toHex())
+	hypervisor.totalFees0 += event.params.feeAmount0
+	hypervisor.totalFees1 += event.params.feeAmount1
+	hypervisor.save()
+
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
