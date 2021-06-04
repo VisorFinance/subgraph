@@ -14,9 +14,9 @@ type Factory @entity {
 type Hypervisor @entity {
   id: ID!
   owner: Bytes!
-  stakingToken: Bytes
+  stakingToken: Token
   totalStakedAmount: BigInt
-  rewardToken: Bytes
+  rewardToken: Token
   rewardPool: Bytes
   rewardPoolAmount: BigInt
   powerSwitch: Bytes
@@ -56,14 +56,14 @@ type OwnerOperator @entity {
 
 type StakedToken @entity {
     id: ID!  # Vault address-Token address
-    token: Bytes!
+    token: Token!
     visor: Visor!
     amount: BigInt!
 }
 
 type RewardedToken @entity {
     id: ID!  # Vault address-Token address
-    token: Bytes!
+    token: Token!
     visor: Visor!
     amount: BigInt!
 }
@@ -102,6 +102,7 @@ type UniswapV3Hypervisor @entity {
   owner: Bytes!
   symbol: String!
   pool: UniswapV3Pool!
+  tick: Int!
   # Lower tick of base position
   baseLower: Int!
   # Upper tick of base position
@@ -110,8 +111,22 @@ type UniswapV3Hypervisor @entity {
   limitLower: Int!
   # Upper tick of limit position
   limitUpper: Int!
-  totalFees0: BigInt!
-  totalFees1: BigInt!
+  # Gross Fees claimed
+  grossFeesClaimed0: BigInt!
+  grossFeesClaimed1: BigInt!
+  grossFeesClaimedUSD: BigDecimal!
+  # Protocol fees for VISR buyback
+  protocolFeesCollected0: BigInt!
+  protocolFeesCollected1: BigInt!
+  protocolFeesCollectedUSD: BigDecimal!
+  # Gross fees minus protocol fees and pro-rated withdraws
+  feesReinvested0: BigInt!
+  feesReinvested1: BigInt!
+  feesReinvestedUSD: BigDecimal!
+  # TVL updated every deposit/rebalance/withdraw
+  tvl0: BigInt!
+  tvl1: BigInt!
+  tvlUSD: BigDecimal!
   deposits: [UniswapV3Deposit!]! @derivedFrom(field: "hypervisor")
   rebalances: [UniswapV3Rebalance!]! @derivedFrom(field: "hypervisor")
   withdraws: [UniswapV3Withdraw!]! @derivedFrom(field: "hypervisor")
@@ -120,33 +135,65 @@ type UniswapV3Hypervisor @entity {
 type UniswapV3Deposit @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: BigInt!
+  timestamp: Int!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
   amount0: BigInt!
   amount1: BigInt!
+  amountUSD: BigDecimal!
 }
 
 type UniswapV3Rebalance @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: BigInt!
-  tick: BigInt!
+  timestamp: Int!
+  tick: Int!
   totalAmount0: BigInt!
   totalAmount1: BigInt!
-  feeAmount0: BigInt!
-  feeAmount1: BigInt!
+  totalAmountUSD: BigDecimal!
+  grossFees0: BigInt!
+  grossFees1: BigInt!
+  grossFeesUSD: BigDecimal!
+  protocolFees0: BigInt!
+  protocolFees1: BigInt!
+  protocolFeesUSD: BigDecimal!
+  netFees0: BigInt!
+  netFees1: BigInt!
+  netFeesUSD: BigDecimal!
   totalSupply: BigInt!
 }
 
 type UniswapV3Withdraw @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: BigInt!
+  timestamp: Int!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
   amount0: BigInt!
   amount1: BigInt!
+  amountUSD: BigDecimal!
+}
+
+type UniswapV3HypervisorDayData @entity {
+  id: ID!
+  date: Int!
+  hypervisor: UniswapV3Hypervisor!
+  # Gross Fees claimed
+  grossFeesClaimed0: BigInt!
+  grossFeesClaimed1: BigInt!
+  grossFeesClaimedUSD: BigDecimal!
+  # Protocol fees for VISR buyback
+  protocolFeesCollected0: BigInt!
+  protocolFeesCollected1: BigInt!
+  protocolFeesCollectedUSD: BigDecimal!
+  # Gross fees minus protocol fees and pro-rated withdraws
+  feesReinvested0: BigInt!
+  feesReinvested1: BigInt!
+  feesReinvestedUSD: BigDecimal!
+  # TVL is net deposits + net fees
+  tvl0: BigInt!
+  tvl1: BigInt!
+  tvlUSD: BigDecimal!
 }
