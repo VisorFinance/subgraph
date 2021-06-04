@@ -1,0 +1,58 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: UniswapV3HypervisorFactory
+    network: {{network}}
+    source:
+      address: "{{v3FactoryAddress}}"
+      abi: UniswapV3HypervisorFactory
+      startBlock: {{v3FactoryStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/hypervisorFactory.ts
+      entities:
+        - UniswapV3Hypervisor
+      abis:
+        - name: UniswapV3HypervisorFactory
+          file: ./abis/UniswapV3HypervisorFactory.json
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: HypervisorCreated(address,address,uint24,address,uint256)
+          handler: handleHypervisorCreated
+templates:
+  - name: UniswapV3Hypervisor
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      abi: UniswapV3Hypervisor
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/hypervisor.ts
+      entities:
+        - UniswapV3Hypervisor
+        - UniswapV3Deposit
+        - UniswapV3Rebalance
+        - UniswapV3Withdraw
+      abis:
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleWithdraw
+        - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebalance
