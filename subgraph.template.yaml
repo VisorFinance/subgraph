@@ -227,9 +227,9 @@ dataSources:
     name: UniswapV3HypervisorFactory
     network: mainnet
     source:
-      address: "0xaaCd0b4B321327B6D9EEc4Ed6F09D640CE218200"
+      address: "{{v3FactoryAddress}}"
       abi: UniswapV3HypervisorFactory
-      startBlock: 12556320
+      startBlock: {{v3FactoryStartBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -244,6 +244,8 @@ dataSources:
           file: ./abis/UniswapV3Hypervisor.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
       eventHandlers:
         - event: HypervisorCreated(address,address,uint24,address,uint256)
           handler: handleHypervisorCreated
@@ -266,6 +268,8 @@ templates:
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
       eventHandlers:
         - event: Deposit(indexed address,indexed address,uint256,uint256,uint256)
           handler: handleDeposit

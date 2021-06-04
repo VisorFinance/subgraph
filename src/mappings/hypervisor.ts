@@ -1,4 +1,4 @@
-import { log, store, Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { 
 	Hypervisor as HyperVisorContract,
 	BonusTokenRegistered,
@@ -11,11 +11,9 @@ import {
 	VaultFactoryRegistered,
 	VaultFactoryRemoved
 } from "../../generated/Hypervisor/Hypervisor"
-import {
-	Hypervisor,
-	StakedToken,
-	RewardedToken
-} from "../../generated/schema"
+import { Hypervisor, StakedToken, RewardedToken } from "../../generated/schema"
+import { createStakedToken, createRewardedToken } from "../utils/tokens"
+import { ZERO_BI } from "../utils/constants"
 
 
 export function handleBonusTokenRegistered(event: BonusTokenRegistered): void {
@@ -31,13 +29,13 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
 	let hypervisor = Hypervisor.load(event.address.toHex())
 	hypervisor.powerSwitch = event.params.powerSwitch
 	hypervisor.rewardPool = event.params.rewardPool
-	hypervisor.rewardPoolAmount = BigInt.fromI32(0)
+	hypervisor.rewardPoolAmount = ZERO_BI
 
 	let hypervisorContract = HyperVisorContract.bind(event.address)
 	let callResults = hypervisorContract.getHypervisorData()
-	hypervisor.stakingToken = callResults.stakingToken
-	hypervisor.totalStakedAmount = BigInt.fromI32(0)
-	hypervisor.rewardToken = callResults.rewardToken
+	hypervisor.stakingToken = callResults.stakingToken.toHexString()
+	hypervisor.totalStakedAmount = ZERO_BI
+	hypervisor.rewardToken = callResults.rewardToken.toHexString()
 	hypervisor.save()
 }
 
@@ -60,18 +58,14 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
 export function handleRewardClaimed(event: RewardClaimed): void {
 	// there is both reward token and bonus token
 	let hypervisor = Hypervisor.load(event.address.toHex())
-	if (event.params.token.toHex() == hypervisor.rewardToken.toHex()) {
+	if (event.params.token.toHex() == hypervisor.rewardToken) {
 		hypervisor.rewardPoolAmount -= event.params.amount
 	}
 	hypervisor.save()
 
-	let rewardedTokenId = event.params.vault.toHex() + "-" + hypervisor.stakingToken.toHex() 
-	let rewardedToken = RewardedToken.load(rewardedTokenId)
+	let rewardedToken = RewardedToken.load(event.params.vault.toHexString() + "-" + hypervisor.rewardToken)
 	if (rewardedToken == null) {
-		rewardedToken = new RewardedToken(rewardedTokenId)
-		rewardedToken.token = Address.fromString(hypervisor.stakingToken.toHex())
-		rewardedToken.visor = event.params.vault.toHex()
-		rewardedToken.amount = BigInt.fromI32(0)
+		rewardedToken = createRewardedToken(event.params.vault, Address.fromString(hypervisor.rewardToken))
 	}
 	rewardedToken.amount += event.params.amount
 	rewardedToken.save()
@@ -83,13 +77,9 @@ export function handleStaked(event: Staked): void {
 	hypervisor.totalStakedAmount += event.params.amount
 	hypervisor.save()
 
-	let stakedTokenId = event.params.vault.toHex() + "-" + hypervisor.stakingToken.toHex() 
-	let stakedToken = StakedToken.load(stakedTokenId)
+	let stakedToken = StakedToken.load(event.params.vault.toHexString() + "-" + hypervisor.stakingToken)
 	if (stakedToken == null) {
-		stakedToken = new StakedToken(stakedTokenId)
-		stakedToken.token = Address.fromString(hypervisor.stakingToken.toHex())
-		stakedToken.visor = event.params.vault.toHex()
-		stakedToken.amount = BigInt.fromI32(0)
+		stakedToken = createStakedToken(event.params.vault, Address.fromString(hypervisor.stakingToken))
 	}
 	stakedToken.amount += event.params.amount
 	stakedToken.save()
@@ -100,7 +90,7 @@ export function handleUnstaked(event: Unstaked): void {
 	hypervisor.totalStakedAmount -= event.params.amount
 	hypervisor.save()
 
-	let stakedTokenId = event.params.vault.toHex() + "-" + hypervisor.stakingToken.toHex() 
+	let stakedTokenId = event.params.vault.toHex() + "-" + hypervisor.stakingToken
 	let stakedToken = StakedToken.load(stakedTokenId)
 	stakedToken.amount -= event.params.amount
 	stakedToken.save()

@@ -7,12 +7,18 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ visorfinance/visor",
+    "deploy-loc": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ l0c4t0r/visor",
     "create-local": "graph create --node http://localhost:8020/ visorfinance/visor",
     "remove-local": "graph remove --node http://localhost:8020/ visorfinance/visor",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 visorfinance/visor"
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 visorfinance/visor",
+    "prepare:full-mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:v3only-mainnet": "mustache config/mainnet.json v3only.template.yaml > subgraph.yaml"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.20.0",
-    "@graphprotocol/graph-ts": "0.20.0"
+    "@graphprotocol/graph-cli": "^0.20.0",
+    "@graphprotocol/graph-ts": "^0.20.0"
+  },
+  "devDependencies": {
+    "mustache": "^3.2.1"
   }
 }
