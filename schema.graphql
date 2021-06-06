@@ -92,6 +92,10 @@ type UniswapV3HypervisorFactory @entity {
   # Hypervisor address
   id: ID!
   hypervisorCount: BigInt!
+  grossFeesClaimedUSD: BigDecimal!
+  protocolFeesCollectedUSD: BigDecimal!
+  feesReinvestedUSD: BigDecimal!
+  tvlUSD: BigDecimal!
   hypervisors: [UniswapV3Hypervisor!]! @derivedFrom(field: "factory")
 }
 
@@ -100,6 +104,7 @@ type UniswapV3Hypervisor @entity {
   id: ID!
   factory: UniswapV3HypervisorFactory!
   owner: Bytes!
+  created: Int!
   symbol: String!
   pool: UniswapV3Pool!
   tick: Int!
@@ -192,7 +197,6 @@ type UniswapV3HypervisorDayData @entity {
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
-  # TVL is net deposits + net fees
   tvl0: BigInt!
   tvl1: BigInt!
   tvlUSD: BigDecimal!
