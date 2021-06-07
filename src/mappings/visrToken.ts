@@ -4,6 +4,9 @@ import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { ADDRESS_ZERO, ZERO_BI } from '../utils/constants'
 
+let VISR_DISTRIBUTOR = "0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"
+let MULTISEND_APP = "0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f"
+
 export function handleTransfer(event: TransferEvent): void {
 
 	let visrAddress = event.address
@@ -17,13 +20,13 @@ export function handleTransfer(event: TransferEvent): void {
 		visr.decimals = visrContract.decimals()
 		visr.totalSupply = ZERO_BI
 		visr.staked = ZERO_BI
+		visr.distributed = ZERO_BI
 	}
 
 	if (event.params.from == Address.fromString(ADDRESS_ZERO)) {
 		// Mint event
 		visr.totalSupply += event.params.value
 	}
-
 
 	// Check if either from or to address are VISOR vaults
 	let toString = event.params.to.toHexString()
@@ -41,6 +44,9 @@ export function handleTransfer(event: TransferEvent): void {
 		// Track total VISR staked
 		visr.staked += event.params.value
 		stakedToken.save()
+		if (event.params.from == Address.fromString(VISR_DISTRIBUTOR) || event.params.from == Address.fromString(MULTISEND_APP)) {
+			visr.distributed += event.params.value
+		}
 	} else if (visorFrom != null) {
 		// VISR transferred out of visor vault (unstaked)
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)

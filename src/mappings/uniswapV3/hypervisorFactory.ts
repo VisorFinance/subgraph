@@ -1,10 +1,8 @@
-import { log, Address } from '@graphprotocol/graph-ts'
+import { Address } from '@graphprotocol/graph-ts'
 import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3HypervisorFactory"
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Hypervisor"
-import { ERC20 as ERC20Contract } from "../../../generated/UniswapV3HypervisorFactory/ERC20"
 import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"
-import { Token, UniswapV3Pool, UniswapV3Hypervisor, UniswapV3HypervisorFactory } from "../../../generated/schema"
-import { updateUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
+import { UniswapV3Pool, UniswapV3Hypervisor, UniswapV3HypervisorFactory } from "../../../generated/schema"
 import { createToken } from "../../utils/tokens"
 import { ZERO_BI, ONE_BI, ZERO_BD } from "../../utils/constants"
 
@@ -17,6 +15,10 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     if (factory == null) {
         factory = new UniswapV3HypervisorFactory(factoryAddressString)
         factory.hypervisorCount = ZERO_BI
+        factory.grossFeesClaimedUSD = ZERO_BD
+        factory.protocolFeesCollectedUSD = ZERO_BD
+        factory.feesReinvestedUSD = ZERO_BD
+        factory.tvlUSD = ZERO_BD
     }
     factory.hypervisorCount += ONE_BI
 
@@ -40,6 +42,7 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     hypervisor.factory = factoryAddressString
     hypervisor.owner = hypervisorContract.owner()
     hypervisor.symbol = hypervisorContract.symbol()
+    hypervisor.created = event.block.timestamp.toI32()
     hypervisor.tick = hypervisorContract.currentTick()
     hypervisor.baseLower = hypervisorContract.baseLower()
     hypervisor.baseUpper = hypervisorContract.baseUpper()
