@@ -12,7 +12,7 @@
     "remove-local": "graph remove --node http://localhost:8020/ visorfinance/visor",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 visorfinance/visor",
     "prepare:full-mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
-    "prepare:v3only-mainnet": "mustache config/mainnet.json v3only.template.yaml > subgraph.yaml",
+    "prepare:v3only-mainnet": "mustache config/mainnet.json v3only.template.yaml > subgraph.yaml"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.20.0",

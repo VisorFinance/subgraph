@@ -4,6 +4,7 @@ type VisrToken @entity {
   decimals: Int!
   totalSupply: BigInt!
   staked: BigInt!
+  distributed: BigInt!
 }
 
 type Factory @entity {
