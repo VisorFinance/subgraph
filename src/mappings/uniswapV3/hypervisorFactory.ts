@@ -14,6 +14,7 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     let factory = UniswapV3HypervisorFactory.load(factoryAddressString)
     if (factory == null) {
         factory = new UniswapV3HypervisorFactory(factoryAddressString)
+        factory.created = event.block.timestamp.toI32()
         factory.hypervisorCount = ZERO_BI
         factory.grossFeesClaimedUSD = ZERO_BD
         factory.protocolFeesCollectedUSD = ZERO_BD

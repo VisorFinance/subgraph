@@ -15,6 +15,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - VisrToken
+        - VisrTokenDayData
         - Visor
       abis:
         - name: ERC20
@@ -105,13 +106,14 @@ dataSources:
           handler: handleVaultFactoryRemoved
       file: ./src/mappings/hypervisor.ts
     {{/liquidityMining}}
+  {{#uniswapV3}}
   - kind: ethereum/contract
-    name: UniswapV3HypervisorFactory
+    name: {{name}}
     network: mainnet
     source:
-      address: "{{v3FactoryAddress}}"
+      address: "{{factoryAddress}}"
       abi: UniswapV3HypervisorFactory
-      startBlock: {{v3FactoryStartBlock}}
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -132,6 +134,7 @@ dataSources:
       eventHandlers:
         - event: HypervisorCreated(address,address,uint24,address,uint256)
           handler: handleHypervisorCreated
+  {{/uniswapV3}}
 templates:
   - name: UniswapV3Hypervisor
     kind: ethereum/contract
