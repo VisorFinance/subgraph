@@ -21,8 +21,6 @@ import { ZERO_BD } from "../../utils/constants"
 export function handleDeposit(event: DepositEvent): void {
 
 	let hypervisorAddress = event.address.toHexString()
-	let depositAmount0 = event.params.amount0
-	let depositAmount1 = event.params.amount1
 
 	let deposit = new UniswapV3Deposit(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
 	deposit.hypervisor = hypervisorAddress
@@ -30,8 +28,8 @@ export function handleDeposit(event: DepositEvent): void {
 	deposit.sender = event.params.sender
 	deposit.to = event.params.to
 	deposit.shares = event.params.shares
-	deposit.amount0 = depositAmount0
-	deposit.amount1 = depositAmount1
+	deposit.amount0 = event.params.amount0
+	deposit.amount1 = event.params.amount1
 
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
 
@@ -58,7 +56,13 @@ export function handleDeposit(event: DepositEvent): void {
 
 	updateTvl(event.address)
 	updateAggregates(hypervisorAddress)
-	updateUniswapV3HypervisorDayData(event)
+	
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	hypervisorDayData.deposited0 += deposit.amount0
+    hypervisorDayData.deposited1 += deposit.amount1
+    hypervisorDayData.depositedUSD += deposit.amountUSD
+    hypervisorDayData.save()
+
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
@@ -138,7 +142,18 @@ export function handleRebalance(event: RebalanceEvent): void {
 
 	updateTvl(event.address)
 	updateAggregates(hypervisorAddress)
-	updateUniswapV3HypervisorDayData(event)
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+
+	hypervisorDayData.grossFeesClaimed0 += hypervisor.grossFeesClaimed0
+    hypervisorDayData.grossFeesClaimed1 += hypervisor.grossFeesClaimed1
+    hypervisorDayData.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
+    hypervisorDayData.protocolFeesCollected0 += hypervisor.protocolFeesCollected0
+    hypervisorDayData.protocolFeesCollected1 += hypervisor.protocolFeesCollected1
+    hypervisorDayData.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
+    hypervisorDayData.feesReinvested0 += hypervisor.feesReinvested0
+    hypervisorDayData.feesReinvested1 += hypervisor.feesReinvested1
+    hypervisorDayData.feesReinvestedUSD += hypervisor.feesReinvestedUSD
+    hypervisorDayData.save()
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
@@ -181,5 +196,10 @@ export function handleWithdraw(event: WithdrawEvent): void {
 
 	updateTvl(event.address)
 	updateAggregates(hypervisorAddress)
-	updateUniswapV3HypervisorDayData(event)
+	
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	hypervisorDayData.withdrawn0 += withdraw.amount0
+    hypervisorDayData.withdrawn1 += withdraw.amount1
+    hypervisorDayData.withdrawnUSD += withdraw.amountUSD
+    hypervisorDayData.save()
 }

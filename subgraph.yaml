@@ -15,6 +15,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - VisrToken
+        - VisrTokenDayData
         - Visor
       abis:
         - name: ERC20
@@ -227,9 +228,63 @@ dataSources:
     name: UniswapV3HypervisorFactory
     network: mainnet
     source:
+      address: "0x0ac51fb63d1915a77ab7a7bb53b031407584dd4c"
+      abi: UniswapV3HypervisorFactory
+      startBlock: 12590273
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/hypervisorFactory.ts
+      entities:
+        - UniswapV3HypervisorFactory
+        - UniswapV3Hypervisor
+      abis:
+        - name: UniswapV3HypervisorFactory
+          file: ./abis/UniswapV3HypervisorFactory.json
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: HypervisorCreated(address,address,uint24,address,uint256)
+          handler: handleHypervisorCreated
+  - kind: ethereum/contract
+    name: UniswapV3HypervisorFactoryBeta1
+    network: mainnet
+    source:
       address: "0xaaCd0b4B321327B6D9EEc4Ed6F09D640CE218200"
       abi: UniswapV3HypervisorFactory
       startBlock: 12556320
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/hypervisorFactory.ts
+      entities:
+        - UniswapV3HypervisorFactory
+        - UniswapV3Hypervisor
+      abis:
+        - name: UniswapV3HypervisorFactory
+          file: ./abis/UniswapV3HypervisorFactory.json
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: HypervisorCreated(address,address,uint24,address,uint256)
+          handler: handleHypervisorCreated
+  - kind: ethereum/contract
+    name: UniswapV3HypervisorFactoryBeta2
+    network: mainnet
+    source:
+      address: "0x9004d66dffe422e6a23a5c9347dac07226768a28"
+      abi: UniswapV3HypervisorFactory
+      startBlock: 12581765
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

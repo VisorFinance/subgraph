@@ -1,27 +1,42 @@
 {
-	"network": "mainnet",
-	"liquidityMining": [
-		{
-			"name": "Hypervisor",
-			"address": "0xF178d88D2F6F97CA32F92b465987068e1Cce41c5",
-			"startBlock": 12108493
-		},
-		{
-			"name": "USDC-Hypervisor",
-			"address": "0x96C105E9e9eAb36eb8e2f851A5dabFbBd397c085",
-			"startBlock": 12108420
-		},
-		{
-			"name": "USDT-Hypervisor",
-			"address": "0xEBaE3CB14CE6C2F26B40b747fd92cCaf03B98659",
-			"startBlock": 12108439
-		},
-		{
-			"name": "VISR-ETH-Hypervisor",
-			"address": "0x64fcDD0DE44f4bd04c039B0664FB95EF033D4efb",
-			"startBlock": 12108528
-		}
-	],
-	"v3FactoryAddress": "0xaaCd0b4B321327B6D9EEc4Ed6F09D640CE218200",
-	"v3FactoryStartBlock": 12556320
+    "network": "mainnet",
+    "liquidityMining": [
+        {
+            "name": "Hypervisor",
+            "address": "0xF178d88D2F6F97CA32F92b465987068e1Cce41c5",
+            "startBlock": 12108493
+        },
+        {
+            "name": "USDC-Hypervisor",
+            "address": "0x96C105E9e9eAb36eb8e2f851A5dabFbBd397c085",
+            "startBlock": 12108420
+        },
+        {
+            "name": "USDT-Hypervisor",
+            "address": "0xEBaE3CB14CE6C2F26B40b747fd92cCaf03B98659",
+            "startBlock": 12108439
+        },
+        {
+            "name": "VISR-ETH-Hypervisor",
+            "address": "0x64fcDD0DE44f4bd04c039B0664FB95EF033D4efb",
+            "startBlock": 12108528
+        }
+    ],
+    "uniswapV3": [
+        {
+            "name": "UniswapV3HypervisorFactory",
+            "factoryAddress": "0x0ac51fb63d1915a77ab7a7bb53b031407584dd4c",
+            "startBlock": 12590273
+        },
+        {
+            "name": "UniswapV3HypervisorFactoryBeta1",
+            "factoryAddress": "0xaaCd0b4B321327B6D9EEc4Ed6F09D640CE218200",
+            "startBlock": 12556320
+        },
+        {
+            "name": "UniswapV3HypervisorFactoryBeta2",
+            "factoryAddress": "0x9004d66dffe422e6a23a5c9347dac07226768a28",
+            "startBlock": 12581765
+        }
+    ]
 }

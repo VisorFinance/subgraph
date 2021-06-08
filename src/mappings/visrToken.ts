@@ -2,6 +2,7 @@ import { log, Address, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
+import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI } from '../utils/constants'
 
 let VISR_DISTRIBUTOR = "0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"
@@ -19,14 +20,16 @@ export function handleTransfer(event: TransferEvent): void {
 		visr.name = visrContract.name()
 		visr.decimals = visrContract.decimals()
 		visr.totalSupply = ZERO_BI
-		visr.staked = ZERO_BI
-		visr.distributed = ZERO_BI
+		visr.totalStaked = ZERO_BI
+		visr.totalDistributed = ZERO_BI
 	}
 
 	if (event.params.from == Address.fromString(ADDRESS_ZERO)) {
 		// Mint event
 		visr.totalSupply += event.params.value
 	}
+
+	let distributed = ZERO_BI
 
 	// Check if either from or to address are VISOR vaults
 	let toString = event.params.to.toHexString()
@@ -35,25 +38,31 @@ export function handleTransfer(event: TransferEvent): void {
 	let visorFrom = Visor.load(fromString)
 	if (visorTo != null) {
 		// VISR transferred into visor vault (staked)
-		// Load stakedToken for vault
 		let stakedToken = StakedToken.load(toString + "-" + visrAddressString)
 		if (stakedToken == null) {
 			stakedToken = createStakedToken(event.params.to, visrAddress)
 		}
 		stakedToken.amount += event.params.value
 		// Track total VISR staked
-		visr.staked += event.params.value
+		visr.totalStaked += event.params.value
 		stakedToken.save()
 		if (event.params.from == Address.fromString(VISR_DISTRIBUTOR) || event.params.from == Address.fromString(MULTISEND_APP)) {
-			visr.distributed += event.params.value
+			// Sender is fee distributor
+			distributed += event.params.value
+			visr.totalDistributed += distributed
 		}
-	} else if (visorFrom != null) {
+	} else if (visorFrom != null && event.params.value > ZERO_BI) {
 		// VISR transferred out of visor vault (unstaked)
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)
 		stakedToken.amount -= event.params.value
 		// Track total VISR staked
-		visr.staked -= event.params.value
+		visr.totalStaked -= event.params.value
 		stakedToken.save()
 	}
 	visr.save()
+
+	// Update daily distributed data
+	let visrTokenDayData = updateVisrTokenDayData(event)
+	visrTokenDayData.distributed += distributed
+	visrTokenDayData.save()
 }
