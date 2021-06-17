@@ -25,18 +25,13 @@
     "uniswapV3": [
         {
             "name": "UniswapV3HypervisorFactory",
-            "factoryAddress": "0x0ac51fb63d1915a77ab7a7bb53b031407584dd4c",
+            "factoryAddress": "0xC878c38F0Df509a833D10De892e1Cf7D361e3A67",
+            "startBlock": 12615883
+        },
+        {
+            "name": "UniswapV3HypervisorFactoryBeta",
+            "factoryAddress": "0x0AC51Fb63D1915a77aB7a7Bb53B031407584dD4C",
             "startBlock": 12590273
-        },
-        {
-            "name": "UniswapV3HypervisorFactoryBeta1",
-            "factoryAddress": "0xaaCd0b4B321327B6D9EEc4Ed6F09D640CE218200",
-            "startBlock": 12556320
-        },
-        {
-            "name": "UniswapV3HypervisorFactoryBeta2",
-            "factoryAddress": "0x9004d66dffe422e6a23a5c9347dac07226768a28",
-            "startBlock": 12581765
         }
     ]
 }

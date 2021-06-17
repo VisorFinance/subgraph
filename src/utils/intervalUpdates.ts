@@ -13,6 +13,7 @@ export function updateVisrTokenDayData(event: ethereum.Event): VisrTokenDayData 
         visrDayData = new VisrTokenDayData(dayID.toString())
         visrDayData.date = dayStartTimestamp
         visrDayData.distributed = ZERO_BI
+        visrDayData.distributedUSD = ZERO_BD
     }
     visrDayData.totalStaked = visr.totalStaked
     visrDayData.save()

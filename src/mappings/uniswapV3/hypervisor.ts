@@ -39,7 +39,6 @@ export function handleDeposit(event: DepositEvent): void {
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {
@@ -103,8 +102,6 @@ export function handleRebalance(event: RebalanceEvent): void {
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price0 = prices[0]
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {
@@ -178,8 +175,6 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price0 = prices[0]
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {

@@ -5,6 +5,7 @@ type VisrToken @entity {
   totalSupply: BigInt!
   totalStaked: BigInt!
   totalDistributed: BigInt!
+  totalDistributedUSD: BigDecimal!
 }
 
 type VisrTokenDayData @entity {
@@ -14,6 +15,7 @@ type VisrTokenDayData @entity {
   totalStaked: BigInt!
   # VISR distributed for the day
   distributed: BigInt!
+  distributedUSD: BigDecimal!
 }
 
 type Factory @entity {
@@ -101,11 +103,17 @@ type UniswapV3Pool @entity {
 type UniswapV3HypervisorFactory @entity {
   # Hypervisor address
   id: ID!
+  # Timestamp factory was created
   created: Int!
+  # Number of hypervisors created by factory
   hypervisorCount: BigInt!
+  # Cumulative fees claimed by hypervisors from Uniswap
   grossFeesClaimedUSD: BigDecimal!
+  # Cumulative fees collected by protocol from hypervisors
   protocolFeesCollectedUSD: BigDecimal!
+  # Cumulative fees reinvested into pools by hypervisors
   feesReinvestedUSD: BigDecimal!
+  # TVL of all hypervisors under one factory
   tvlUSD: BigDecimal!
   hypervisors: [UniswapV3Hypervisor!]! @derivedFrom(field: "factory")
 }
