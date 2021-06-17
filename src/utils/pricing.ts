@@ -3,7 +3,7 @@ import { UniswapV3Hypervisor } from "../../generated/templates/UniswapV3Hypervis
 import { UniswapV3Pool as PoolContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Pool"
 
 const USDC_WETH_03_POOL = '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8'
-const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+const WETH_VISR_03_POOL = "0x9a9cf34c3892acdb61fb7ff17941d8d81d279c75"
 
 let Q192 = 2 ** 192
 export function getExchangeRate(poolAddress: Address): BigDecimal[] {
@@ -13,15 +13,25 @@ export function getExchangeRate(poolAddress: Address): BigDecimal[] {
     let sqrtPriceX96 = slot0.value0
     let num = sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()
     let denom = BigDecimal.fromString(Q192.toString())
-    let price1 = num.div(denom)  // token0 * price1 = token0 in token1
-    let price0 = denom.div(num)  // token1 * price0 = token1 in token0
+    let price1 = num / denom  // token0 * price1 = token0 in token1
+    let price0 = denom / num  // token1 * price0 = token1 in token0
 
     return [price0, price1]
 }
 
-let DECIMAL_FACTOR = 10 ** 6
+
 export function getEthRateInUSD(): BigDecimal {
+    let DECIMAL_FACTOR = 10 ** 6
     let prices = getExchangeRate(Address.fromString(USDC_WETH_03_POOL))
     let ethRateInUSD = prices[0] / BigDecimal.fromString(DECIMAL_FACTOR.toString())
     return ethRateInUSD
+}
+
+
+export function getVisrRateInUSD(): BigDecimal{
+
+    let ethRate = getEthRateInUSD()
+    let prices = getExchangeRate(Address.fromString(WETH_VISR_03_POOL))
+
+    return prices[0] * ethRate
 }

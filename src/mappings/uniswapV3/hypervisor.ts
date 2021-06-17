@@ -14,29 +14,31 @@ import {
 import { updateUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getEthRateInUSD } from "../../utils/pricing"
 import { isWETH } from "../../utils/tokens"
-import { updateTvl } from "../../utils/uniswapV3Hypervisor"
+import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
 import { ZERO_BD } from "../../utils/constants"
 
 
 export function handleDeposit(event: DepositEvent): void {
 
-	let depositAmount0 = event.params.amount0
-	let depositAmount1 = event.params.amount1
+	let hypervisorAddress = event.address.toHexString()
 
 	let deposit = new UniswapV3Deposit(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	deposit.hypervisor = event.address.toHex()
+	deposit.hypervisor = hypervisorAddress
 	deposit.timestamp = event.block.timestamp.toI32()
 	deposit.sender = event.params.sender
 	deposit.to = event.params.to
 	deposit.shares = event.params.shares
-	deposit.amount0 = depositAmount0
-	deposit.amount1 = depositAmount1
+	deposit.amount0 = event.params.amount0
+	deposit.amount1 = event.params.amount1
+
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+
+	// Reset aggregates until new amounts are calculated
+	resetAggregates(hypervisorAddress)
 	
-	let hypervisor = UniswapV3Hypervisor.load(event.address.toHex())
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {
@@ -52,13 +54,20 @@ export function handleDeposit(event: DepositEvent): void {
 	deposit.save()
 
 	updateTvl(event.address)
-	updateUniswapV3HypervisorDayData(event)
+	updateAggregates(hypervisorAddress)
+	
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	hypervisorDayData.deposited0 += deposit.amount0
+    hypervisorDayData.deposited1 += deposit.amount1
+    hypervisorDayData.depositedUSD += deposit.amountUSD
+    hypervisorDayData.save()
+
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
 
+	let hypervisorAddress = event.address.toHexString()
 	let tick = event.params.tick
-
 	let grossFees0 = event.params.feeAmount0
 	let grossFees1 = event.params.feeAmount1
 
@@ -72,7 +81,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 	let netFees1 = grossFees1 - protocolFees1
 
 	let rebalance = new UniswapV3Rebalance(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	rebalance.hypervisor = event.address.toHex()
+	rebalance.hypervisor = hypervisorAddress
 	rebalance.timestamp = event.block.timestamp.toI32()
 	rebalance.tick = tick
 	rebalance.totalAmount0 = event.params.totalAmount0
@@ -85,12 +94,14 @@ export function handleRebalance(event: RebalanceEvent): void {
 	rebalance.netFees1 = netFees1
 	rebalance.totalSupply = event.params.totalSupply
 
-	let hypervisor = UniswapV3Hypervisor.load(event.address.toHex())
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+
+	// Reset aggregates until new amounts are calculated
+	resetAggregates(hypervisorAddress)
+
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price0 = prices[0]
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {
@@ -127,16 +138,29 @@ export function handleRebalance(event: RebalanceEvent): void {
 	hypervisor.save()
 
 	updateTvl(event.address)
-	updateUniswapV3HypervisorDayData(event)
+	updateAggregates(hypervisorAddress)
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+
+	hypervisorDayData.grossFeesClaimed0 += hypervisor.grossFeesClaimed0
+    hypervisorDayData.grossFeesClaimed1 += hypervisor.grossFeesClaimed1
+    hypervisorDayData.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
+    hypervisorDayData.protocolFeesCollected0 += hypervisor.protocolFeesCollected0
+    hypervisorDayData.protocolFeesCollected1 += hypervisor.protocolFeesCollected1
+    hypervisorDayData.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
+    hypervisorDayData.feesReinvested0 += hypervisor.feesReinvested0
+    hypervisorDayData.feesReinvested1 += hypervisor.feesReinvested1
+    hypervisorDayData.feesReinvestedUSD += hypervisor.feesReinvestedUSD
+    hypervisorDayData.save()
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
 
+	let hypervisorAddress = event.address.toHexString()
 	let withdrawAmount0 = event.params.amount0
 	let withdrawAmount1 = event.params.amount1
 
 	let withdraw = new UniswapV3Withdraw(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	withdraw.hypervisor = event.address.toHex()
+	withdraw.hypervisor = hypervisorAddress
 	withdraw.timestamp = event.block.timestamp.toI32()
 	withdraw.sender = event.params.sender
 	withdraw.to = event.params.to
@@ -144,12 +168,13 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	withdraw.amount0 = withdrawAmount0
 	withdraw.amount1 = withdrawAmount1
 
-	let hypervisor = UniswapV3Hypervisor.load(event.address.toHex())
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+
+	resetAggregates(hypervisorAddress)
+
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let price0 = prices[0]
-	let price1 = prices[1]
 	let ethRate = getEthRateInUSD()
 
 	if (isWETH(Address.fromString(pool.token0))) {
@@ -165,5 +190,11 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	withdraw.save()
 
 	updateTvl(event.address)
-	updateUniswapV3HypervisorDayData(event)
+	updateAggregates(hypervisorAddress)
+	
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	hypervisorDayData.withdrawn0 += withdraw.amount0
+    hypervisorDayData.withdrawn1 += withdraw.amount1
+    hypervisorDayData.withdrawnUSD += withdraw.amountUSD
+    hypervisorDayData.save()
 }

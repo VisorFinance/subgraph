@@ -2,19 +2,21 @@ specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
+  {{#uniswapV3}}
   - kind: ethereum/contract
-    name: UniswapV3HypervisorFactory
+    name: {{name}}
     network: {{network}}
     source:
-      address: "{{v3FactoryAddress}}"
+      address: "{{factoryAddress}}"
       abi: UniswapV3HypervisorFactory
-      startBlock: {{v3FactoryStartBlock}}
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisorFactory.ts
       entities:
+        - UniswapV3HypervisorFactory
         - UniswapV3Hypervisor
       abis:
         - name: UniswapV3HypervisorFactory
@@ -28,6 +30,7 @@ dataSources:
       eventHandlers:
         - event: HypervisorCreated(address,address,uint24,address,uint256)
           handler: handleHypervisorCreated
+  {{/uniswapV3}}
 templates:
   - name: UniswapV3Hypervisor
     kind: ethereum/contract

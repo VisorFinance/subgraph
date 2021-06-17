@@ -1,10 +1,33 @@
-import { Address } from '@graphprotocol/graph-ts'
+import { log, Address } from '@graphprotocol/graph-ts'
 import { UniswapV3Hypervisor as HypervisorContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
-import { UniswapV3Hypervisor, UniswapV3Pool } from "../../generated/schema"
+import { UniswapV3HypervisorFactory, UniswapV3Hypervisor, UniswapV3Pool } from "../../generated/schema"
 import { getExchangeRate, getEthRateInUSD } from "../utils/pricing"
 import { isWETH } from './tokens'
 import { ZERO_BD } from './constants'
 
+
+export function resetAggregates(hypervisorAddress: string): void {
+	// Resets aggregates in factory
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	let factory = UniswapV3HypervisorFactory.load(hypervisor.factory)
+	factory.grossFeesClaimedUSD -= hypervisor.grossFeesClaimedUSD
+	factory.protocolFeesCollectedUSD -= hypervisor.protocolFeesCollectedUSD
+	factory.feesReinvestedUSD -= hypervisor.feesReinvestedUSD
+	factory.tvlUSD -= hypervisor.tvlUSD
+	factory.save()
+}
+
+export function updateAggregates(hypervisorAddress: string): void {
+	// update aggregates in factory from hypervisor
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	let factory = UniswapV3HypervisorFactory.load(hypervisor.factory)
+	factory.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
+	factory.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
+	factory.feesReinvestedUSD += hypervisor.feesReinvestedUSD
+	factory.tvlUSD += hypervisor.tvlUSD
+	factory.save()
+}
+	
 
 export function updateTvl(hypervisorAddress: Address): void {
 	let contract = HypervisorContract.bind(hypervisorAddress)
