@@ -5,9 +5,14 @@ import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI, ZERO_BD } from '../utils/constants'
 import { getVisrRateInUSD } from '../utils/pricing'
+import { recordVisrDistribution } from '../utils/visrToken'
 
-let VISR_DISTRIBUTOR = "0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"
-let MULTISEND_APP = "0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f"
+let DISTRIBUTORS: Array<Address> = [
+	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
+	Address.fromString("0x354ad875a68e5d4ac69cb56df72137e638dcf4a0"),  // Distributor 2
+	Address.fromString("0x3e738bef54e64be0c99759e0c77d9c72c5a8666e"),  // Distributor 3
+	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
+]
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -20,7 +25,7 @@ export function handleTransfer(event: TransferEvent): void {
 	let visr = VisrToken.load(visrAddressString)
 	if (visr === null) {
 		visr = new VisrToken(visrAddressString)
-		let visrContract = ERC20Contract.bind(event.address)
+		let visrContract = ERC20Contract.bind(visrAddress)
 		visr.name = visrContract.name()
 		visr.decimals = visrContract.decimals()
 		visr.totalSupply = ZERO_BI
@@ -51,8 +56,9 @@ export function handleTransfer(event: TransferEvent): void {
 		// Track total VISR staked
 		visr.totalStaked += visrAmount
 		stakedToken.save()
-		if (event.params.from == Address.fromString(VISR_DISTRIBUTOR) || event.params.from == Address.fromString(MULTISEND_APP)) {
+		if (DISTRIBUTORS.includes(event.params.from)) {
 			// Sender is fee distributor
+			recordVisrDistribution(event)
 			visrRate = getVisrRateInUSD()
 			distributed += visrAmount
 			visr.totalDistributed += distributed

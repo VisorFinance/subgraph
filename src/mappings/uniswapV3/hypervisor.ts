@@ -1,9 +1,10 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'
+import { log, Address, BigInt, ByteArray } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
 	Rebalance as RebalanceEvent
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
+import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
@@ -93,6 +94,13 @@ export function handleRebalance(event: RebalanceEvent): void {
 	rebalance.netFees0 = netFees0
 	rebalance.netFees1 = netFees1
 	rebalance.totalSupply = event.params.totalSupply
+
+	// Read rebalance limits from contract as not available in event
+	let hypervisorContract = HypervisorContract.bind(event.address)
+	rebalance.baseLower = hypervisorContract.baseLower()
+	rebalance.baseUpper = hypervisorContract.baseUpper()
+	rebalance.limitLower = hypervisorContract.limitLower()
+	rebalance.limitUpper = hypervisorContract.limitUpper()
 
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
 

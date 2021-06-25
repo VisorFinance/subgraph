@@ -16,6 +16,7 @@ dataSources:
       entities:
         - VisrToken
         - VisrTokenDayData
+        - VisrDistribution
         - Visor
       abis:
         - name: ERC20

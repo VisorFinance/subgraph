@@ -8,6 +8,14 @@ type VisrToken @entity {
   totalDistributedUSD: BigDecimal!
 }
 
+type VisrDistribution @entity {
+  id: ID!
+  timestamp: Int!
+  visor: Visor!
+  amount: BigInt!
+  amountUSD: BigDecimal!
+}
+
 type VisrTokenDayData @entity {
   id: ID!
   date: Int!
@@ -174,6 +182,10 @@ type UniswapV3Rebalance @entity {
   hypervisor: UniswapV3Hypervisor!
   timestamp: Int!
   tick: Int!
+  baseLower: Int!
+  baseUpper: Int!
+  limitLower: Int!
+  limitUpper: Int!
   totalAmount0: BigInt!
   totalAmount1: BigInt!
   totalAmountUSD: BigDecimal!
