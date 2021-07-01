@@ -96,7 +96,7 @@ type Token @entity {
   # token name
   name: String!
   # token decimals
-  decimals: BigInt!
+  decimals: Int!
 }
 
 type UniswapV3Pool @entity {
@@ -121,6 +121,8 @@ type UniswapV3HypervisorFactory @entity {
   protocolFeesCollectedUSD: BigDecimal!
   # Cumulative fees reinvested into pools by hypervisors
   feesReinvestedUSD: BigDecimal!
+  # Adjusted version is reduced by withdraws
+  adjustedFeesReinvestedUSD: BigDecimal!
   # TVL of all hypervisors under one factory
   tvlUSD: BigDecimal!
   hypervisors: [UniswapV3Hypervisor!]! @derivedFrom(field: "factory")
@@ -144,6 +146,10 @@ type UniswapV3Hypervisor @entity {
   # Upper tick of limit position
   limitUpper: Int!
   # All time Gross Fees claimed
+  deposit0Max: BigInt!
+  deposit1Max: BigInt!
+  totalSupply: BigInt!
+  maxTotalSupply: BigInt!
   grossFeesClaimed0: BigInt!
   grossFeesClaimed1: BigInt!
   grossFeesClaimedUSD: BigDecimal!
@@ -151,10 +157,12 @@ type UniswapV3Hypervisor @entity {
   protocolFeesCollected0: BigInt!
   protocolFeesCollected1: BigInt!
   protocolFeesCollectedUSD: BigDecimal!
-  # All time Gross fees minus protocol fees and pro-rated withdraws
+  # All time Gross fees minus protocol fees
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
+  # Adjusted version is reduced by withdraws
+  adjustedFeesReinvestedUSD: BigDecimal!
   # TVL updated every deposit/rebalance/withdraw
   tvl0: BigInt!
   tvl1: BigInt!
@@ -237,6 +245,8 @@ type UniswapV3HypervisorDayData @entity {
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
+  # Cumulative fees reinvested at the end of day
+  adjustedFeesReinvestedUSD: BigDecimal!
   # Last TVL for the day
   tvl0: BigInt!
   tvl1: BigInt!

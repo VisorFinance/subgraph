@@ -1,7 +1,7 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
 import { Token, StakedToken, RewardedToken } from "../../generated/schema"
-import { ZERO_BI, WETH_ADDRESS } from "./constants"
+import { ZERO_BI, WETH_ADDRESS, DEFAULT_DECIMAL } from "./constants"
 
 
 
@@ -19,12 +19,16 @@ export function fetchTokenDecimals(tokenAddress: Address): BigInt {
 
 export function createToken(tokenAddress: Address): Token {
 
+  let token = new Token(tokenAddress.toHex())
   let contract = ERC20.bind(tokenAddress)
 
-  let token = new Token(tokenAddress.toHex())
-  token.symbol = contract.symbol()
-  token.name = contract.name()
-  token.decimals = fetchTokenDecimals(tokenAddress)
+  let tokenDecimals = contract.try_decimals();
+  let tokenName = contract.try_name();
+  let tokenSymbol = contract.try_symbol();
+
+  token.decimals = !tokenDecimals.reverted ? tokenDecimals.value : DEFAULT_DECIMAL;
+  token.name = !tokenName.reverted ? tokenName.value : '';
+  token.symbol = !tokenSymbol.reverted ? tokenSymbol.value : '';
 
   return token
 }

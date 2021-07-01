@@ -47,10 +47,12 @@ export function updateUniswapV3HypervisorDayData(event: ethereum.Event): Uniswap
         hypervisorDayData.feesReinvested0 = ZERO_BI
         hypervisorDayData.feesReinvested1 = ZERO_BI
         hypervisorDayData.feesReinvestedUSD = ZERO_BD
+        hypervisorDayData.adjustedFeesReinvestedUSD = ZERO_BD
         hypervisorDayData.tvl0 = ZERO_BI
         hypervisorDayData.tvl1 = ZERO_BI
         hypervisorDayData.tvlUSD = ZERO_BD
     }
+    hypervisorDayData.adjustedFeesReinvestedUSD = hypervisor.adjustedFeesReinvestedUSD
     hypervisorDayData.tvl0 = hypervisor.tvl0
     hypervisorDayData.tvl1 = hypervisor.tvl1
     hypervisorDayData.tvlUSD = hypervisor.tvlUSD

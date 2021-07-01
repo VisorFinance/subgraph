@@ -2,7 +2,9 @@ import { log, Address, BigInt, ByteArray } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
-	Rebalance as RebalanceEvent
+	Rebalance as RebalanceEvent,
+	SetDepositMaxCall,
+	SetMaxTotalSupplyCall
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
@@ -33,6 +35,8 @@ export function handleDeposit(event: DepositEvent): void {
 	deposit.amount1 = event.params.amount1
 
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	hypervisor.totalSupply += deposit.shares
+	hypervisor.save()
 
 	// Reset aggregates until new amounts are calculated
 	resetAggregates(hypervisorAddress)
@@ -54,7 +58,14 @@ export function handleDeposit(event: DepositEvent): void {
 	}
 	deposit.save()
 
+	// let adjustedFeeRatio = ZERO_BD
+	// // get existing fee/TVL ratio
+	// if (hypervisor.tvlUSD > ZERO_BD) {
+	// 	adjustedFeeRatio = hypervisor.adjustedFeesReinvestedUSD / hypervisor.tvlUSD
+	// }
 	updateTvl(event.address)
+	// Deposits dilutes adjusted Fees ratio
+	// hypervisor.adjustedFeesReinvestedUSD = (hypervisor.tvlUSD - deposit.amountUSD) * adjustedFeeRatio
 	updateAggregates(hypervisorAddress)
 	
 	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
@@ -144,8 +155,11 @@ export function handleRebalance(event: RebalanceEvent): void {
 	hypervisor.feesReinvested1 += netFees1
 	hypervisor.feesReinvestedUSD += rebalance.netFeesUSD
 	hypervisor.save()
-
 	updateTvl(event.address)
+	// Add net fees after adjusted fees are updated from new TVL
+	// hypervisor.adjustedFeesReinvestedUSD += rebalance.netFeesUSD
+	// hypervisor.save()
+
 	updateAggregates(hypervisorAddress)
 	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
 
@@ -177,6 +191,8 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	withdraw.amount1 = withdrawAmount1
 
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	hypervisor.totalSupply -= withdraw.shares
+	hypervisor.save()
 
 	resetAggregates(hypervisorAddress)
 
@@ -205,4 +221,17 @@ export function handleWithdraw(event: WithdrawEvent): void {
     hypervisorDayData.withdrawn1 += withdraw.amount1
     hypervisorDayData.withdrawnUSD += withdraw.amountUSD
     hypervisorDayData.save()
+}
+
+export function handleSetDepositMax(call: SetDepositMaxCall): void {
+	let hypervisor = UniswapV3Hypervisor.load(call.to.toHexString())
+	hypervisor.deposit0Max = call.inputValues[0].value.toBigInt()
+	hypervisor.deposit1Max = call.inputValues[1].value.toBigInt()
+	hypervisor.save()
+}
+
+export function handleSetMaxTotalSupply(call: SetMaxTotalSupplyCall): void {
+	let hypervisor = UniswapV3Hypervisor.load(call.to.toHexString())
+	hypervisor.maxTotalSupply = call.inputValues[0].value.toBigInt()
+	hypervisor.save()
 }

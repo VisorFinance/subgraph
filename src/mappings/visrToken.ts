@@ -14,6 +14,8 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
+let REWARD_HYPERVISOR = Address.fromString("0x40d2ebb9c93f64a5ec60afb3ccbf6398f680e0bb")
+
 export function handleTransfer(event: TransferEvent): void {
 
 	let visrAddress = event.address
@@ -46,7 +48,14 @@ export function handleTransfer(event: TransferEvent): void {
 	let fromString = event.params.from.toHexString()
 	let visorTo = Visor.load(toString)
 	let visorFrom = Visor.load(fromString)
-	if (visorTo != null) {
+	
+	if (event.params.to == REWARD_HYPERVISOR) {
+		// VISR distribution event into rewards hypervisor
+		visrRate = getVisrRateInUSD()
+		distributed += visrAmount
+		visr.totalDistributed += distributed
+		visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
+	} else if (visorTo != null) {
 		// VISR transferred into visor vault (staked)
 		let stakedToken = StakedToken.load(toString + "-" + visrAddressString)
 		if (stakedToken == null) {
@@ -72,6 +81,7 @@ export function handleTransfer(event: TransferEvent): void {
 		visr.totalStaked -= visrAmount
 		stakedToken.save()
 	}
+
 	visr.save()
 
 	// Update daily distributed data

@@ -166,3 +166,8 @@ templates:
           handler: handleWithdraw
         - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
           handler: handleRebalance
+      callHandlers:
+        - function: setDepositMax(uint256,uint256)
+          handler: handleSetDepositMax
+        - function: setMaxTotalSupply(uint256)
+          handler: handleSetMaxTotalSupply
