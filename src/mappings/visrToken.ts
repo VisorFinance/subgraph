@@ -85,8 +85,15 @@ export function handleTransfer(event: TransferEvent): void {
 	visr.save()
 
 	// Update daily distributed data
-	let visrTokenDayData = updateVisrTokenDayData(event)
-	visrTokenDayData.distributed += distributed
-	visrTokenDayData.distributedUSD += distributed.toBigDecimal() * visrRate
-	visrTokenDayData.save()
+	if (distributed > ZERO_BI) {
+		let visrTokenDayDataUTC = updateVisrTokenDayData(event, ZERO_BI)
+		visrTokenDayDataUTC.distributed += distributed
+		visrTokenDayDataUTC.distributedUSD += distributed.toBigDecimal() * visrRate
+		visrTokenDayDataUTC.save()
+
+		let visrTokenDayDataEST = updateVisrTokenDayData(event, BigInt.fromI32(-5))
+		visrTokenDayDataEST.distributed += distributed
+		visrTokenDayDataEST.distributedUSD += distributed.toBigDecimal() * visrRate
+		visrTokenDayDataEST.save()
+	}
 }

@@ -10,7 +10,7 @@ type VisrToken @entity {
 
 type VisrDistribution @entity {
   id: ID!
-  timestamp: Int!
+  timestamp: BigInt!
   visor: Visor!
   amount: BigInt!
   amountUSD: BigDecimal!
@@ -18,7 +18,8 @@ type VisrDistribution @entity {
 
 type VisrTokenDayData @entity {
   id: ID!
-  date: Int!
+  date: BigInt!
+  timezone: String!
   # Total VISR staked at the end of the day
   totalStaked: BigInt!
   # VISR distributed for the day
@@ -112,7 +113,7 @@ type UniswapV3HypervisorFactory @entity {
   # Hypervisor address
   id: ID!
   # Timestamp factory was created
-  created: Int!
+  created: BigInt!
   # Number of hypervisors created by factory
   hypervisorCount: BigInt!
   # Cumulative fees claimed by hypervisors from Uniswap
@@ -176,7 +177,7 @@ type UniswapV3Hypervisor @entity {
 type UniswapV3Deposit @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
@@ -188,7 +189,7 @@ type UniswapV3Deposit @entity {
 type UniswapV3Rebalance @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   tick: Int!
   baseLower: Int!
   baseUpper: Int!
@@ -212,7 +213,7 @@ type UniswapV3Rebalance @entity {
 type UniswapV3Withdraw @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
@@ -223,7 +224,7 @@ type UniswapV3Withdraw @entity {
 
 type UniswapV3HypervisorDayData @entity {
   id: ID!
-  date: Int!
+  date: BigInt!
   hypervisor: UniswapV3Hypervisor!
   # Deposits for the day
   deposited0: BigInt!

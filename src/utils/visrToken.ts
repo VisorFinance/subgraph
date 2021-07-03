@@ -8,7 +8,7 @@ export function recordVisrDistribution(event: TransferEvent): void {
 	let amount = event.params.value
 
 	let visrDistribution = new VisrDistribution(id)
-	visrDistribution.timestamp = event.block.timestamp.toI32()
+	visrDistribution.timestamp = event.block.timestamp
 	visrDistribution.visor = event.params.to.toHex()
 	visrDistribution.amount = amount
 	let visrRate = getVisrRateInUSD()
