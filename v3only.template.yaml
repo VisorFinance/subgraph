@@ -1,4 +1,5 @@
 specVersion: 0.0.2
+repository: https://github.com/VisorFinance/subgraph
 schema:
   file: ./schema.graphql
 dataSources:
@@ -47,6 +48,7 @@ templates:
         - UniswapV3Deposit
         - UniswapV3Rebalance
         - UniswapV3Withdraw
+        - UniswapV3HypervisorShares
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json

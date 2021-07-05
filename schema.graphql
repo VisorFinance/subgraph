@@ -50,8 +50,11 @@ type Visor @entity {
     owner: User!
     operator: User
     tokenId: BigInt
+    visrStaked: BigInt!
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
+    hypervisorShares: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
+    visrDistributions: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
 }
 
 type VisorTemplate @entity {
@@ -252,4 +255,11 @@ type UniswapV3HypervisorDayData @entity {
   tvl0: BigInt!
   tvl1: BigInt!
   tvlUSD: BigDecimal!
+}
+
+type UniswapV3HypervisorShares @entity {
+  id: ID!  # HypervisorAddress-VisorAddress
+  visor: Visor!
+  hypervisor: UniswapV3Hypervisor!
+  shares: BigInt!
 }

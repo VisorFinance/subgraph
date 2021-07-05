@@ -12,8 +12,10 @@ import {
 	UniswapV3Hypervisor,
 	UniswapV3Deposit,
 	UniswapV3Rebalance,
-	UniswapV3Withdraw
+	UniswapV3Withdraw,
+	UniswapV3HypervisorShares
 } from "../../../generated/schema"
+import { ZERO_BI } from "../constants"
 
 
 export function createDeposit(event: DepositEvent): UniswapV3Deposit {
@@ -79,4 +81,23 @@ export function createWithdraw(event: WithdrawEvent): UniswapV3Withdraw {
 	withdraw.amount1 = event.params.amount1
 
 	return withdraw as UniswapV3Withdraw
+}
+
+
+export function getOrCreateHypervisorShares(event: DepositEvent): UniswapV3HypervisorShares {
+	
+	let hypervisorAddress = event.address.toHex()
+	let visorAddress = event.params.to.toHex()
+
+	let id = hypervisorAddress + "-" + visorAddress
+
+	let hypervisorShares = UniswapV3HypervisorShares.load(id)
+	if (hypervisorShares == null) {
+		hypervisorShares = new UniswapV3HypervisorShares(id)
+		hypervisorShares.hypervisor = hypervisorAddress
+		hypervisorShares.visor = visorAddress
+		hypervisorShares.shares = ZERO_BI
+	}
+
+	return hypervisorShares as UniswapV3HypervisorShares
 }

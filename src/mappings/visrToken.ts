@@ -1,4 +1,4 @@
-import { log, Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
@@ -61,6 +61,7 @@ export function handleTransfer(event: TransferEvent): void {
 		if (stakedToken == null) {
 			stakedToken = createStakedToken(event.params.to, visrAddress)
 		}
+		visorTo.visrStaked += visrAmount
 		stakedToken.amount += visrAmount
 		// Track total VISR staked
 		visr.totalStaked += visrAmount
@@ -78,6 +79,7 @@ export function handleTransfer(event: TransferEvent): void {
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)
 		stakedToken.amount -= visrAmount
 		// Track total VISR staked
+		visorFrom.visrStaked -= visrAmount
 		visr.totalStaked -= visrAmount
 		stakedToken.save()
 	}

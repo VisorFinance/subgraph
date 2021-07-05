@@ -154,6 +154,7 @@ templates:
         - UniswapV3Deposit
         - UniswapV3Rebalance
         - UniswapV3Withdraw
+        - UniswapV3HypervisorShares
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json

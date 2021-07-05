@@ -1,4 +1,4 @@
-import { log, Address, BigInt, ByteArray } from '@graphprotocol/graph-ts'
+import { Address } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
@@ -11,8 +11,14 @@ import {
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
 	UniswapV3Rebalance,
+	UniswapV3HypervisorShares
 } from "../../../generated/schema"
-import { createDeposit, createRebalance, createWithdraw } from "../../utils/uniswapV3/hypervisor"
+import { 
+	createDeposit,
+	createRebalance,
+	createWithdraw,
+	getOrCreateHypervisorShares
+} from "../../utils/uniswapV3/hypervisor"
 import { updateUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getEthRateInUSD } from "../../utils/pricing"
 import { isWETH } from "../../utils/tokens"
@@ -47,10 +53,14 @@ export function handleDeposit(event: DepositEvent): void {
 	}
 	deposit.save()
 
+	// Update visor shares
+	let hypervisorShares = getOrCreateHypervisorShares(event)
+	hypervisorShares.shares += deposit.shares
+	hypervisorShares.save()
 	// Update relevant hypervisor fields
 	hypervisor.totalSupply += deposit.shares
 	hypervisor.save()
-	
+
 	// let adjustedFeeRatio = ZERO_BD
 	// // get existing fee/TVL ratio
 	// if (hypervisor.tvlUSD > ZERO_BD) {
@@ -164,6 +174,12 @@ export function handleWithdraw(event: WithdrawEvent): void {
 		withdraw.amountUSD = ZERO_BD
 	}
 	withdraw.save()
+
+	// Update visor shares
+	let hypervisorSharesId = hypervisorId + "-" + event.params.sender.toHex()
+	let hypervisorShares = UniswapV3HypervisorShares.load(hypervisorSharesId)
+	hypervisorShares.shares -= withdraw.shares
+	hypervisorShares.save()
 
 	// Update relevant hypervisor fields
 	hypervisor.totalSupply -= withdraw.shares
