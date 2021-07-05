@@ -1,4 +1,5 @@
-import { log, store, BigInt } from '@graphprotocol/graph-ts'
+import { store } from '@graphprotocol/graph-ts'
+import { visorAddressFromTokenId } from "../utils/visor"
 import { 
 	VisorFactory,
 	Approval,
@@ -11,10 +12,10 @@ import {
 	Transfer
 } from "../../generated/VisorFactory/VisorFactory"
 import { Factory, User,	OwnerOperator, Visor, VisorTemplate } from "../../generated/schema"
-import { ZERO_BI, ONE_BI } from "../utils/constants"
+import { ADDRESS_ZERO, ZERO_BI, ONE_BI } from "../utils/constants"
 
 export function handleApproval(event: Approval): void {
-	let visorId = event.params.tokenId.toHex()
+	let visorId = visorAddressFromTokenId(event.params.tokenId)
 	let visor = Visor.load(visorId)
 	visor.operator = event.params.approved.toHex()
 	visor.save()
@@ -40,18 +41,8 @@ export function handleInstanceAdded(event: InstanceAdded): void {
 
 	let visor = new Visor(event.params.instance.toHex())
 	visor.owner = owner.toHex()
-	let visorFactory = VisorFactory.bind(event.address)
-	let vaultIndex = visorFactory.vaultCount(owner) - ONE_BI
-	if (vaultIndex > ZERO_BI) {
-		let callResult = visorFactory.try_tokenOfOwnerByIndex(owner, vaultIndex)
-		if (callResult.reverted) {
-			log.info("tokenOfOwnerByIndex reverted.", [])
-		} else {
-			visor.tokenId = callResult.value
-		}
-	} else {
-		log.debug("vaultIndex is less than 1.", [])
-	}
+	visor.visrStaked = ZERO_BI
+
 	visor.save()
 }
 
@@ -83,11 +74,12 @@ export function handleTemplateAdded(event: TemplateAdded): void {
 }
 
 export function handleTransfer(event: Transfer): void {
-	let visorId = event.params.tokenId.toHex()
+	let visorId = visorAddressFromTokenId(event.params.tokenId)
 	let visor = Visor.load(visorId)
 	if (visor == null) {
 		visor = new Visor(visorId)
 		visor.tokenId = event.params.tokenId
+		visor.visrStaked = ZERO_BI
 	}
 	visor.owner = event.params.to.toHex()
 	visor.save()

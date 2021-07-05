@@ -1,13 +1,20 @@
-import { log, Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI, ZERO_BD } from '../utils/constants'
 import { getVisrRateInUSD } from '../utils/pricing'
+import { recordVisrDistribution } from '../utils/visrToken'
 
-let VISR_DISTRIBUTOR = "0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"
-let MULTISEND_APP = "0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f"
+let DISTRIBUTORS: Array<Address> = [
+	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
+	Address.fromString("0x354ad875a68e5d4ac69cb56df72137e638dcf4a0"),  // Distributor 2
+	Address.fromString("0x3e738bef54e64be0c99759e0c77d9c72c5a8666e"),  // Distributor 3
+	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
+]
+
+let REWARD_HYPERVISOR = Address.fromString("0x40d2ebb9c93f64a5ec60afb3ccbf6398f680e0bb")
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -20,7 +27,7 @@ export function handleTransfer(event: TransferEvent): void {
 	let visr = VisrToken.load(visrAddressString)
 	if (visr === null) {
 		visr = new VisrToken(visrAddressString)
-		let visrContract = ERC20Contract.bind(event.address)
+		let visrContract = ERC20Contract.bind(visrAddress)
 		visr.name = visrContract.name()
 		visr.decimals = visrContract.decimals()
 		visr.totalSupply = ZERO_BI
@@ -41,18 +48,27 @@ export function handleTransfer(event: TransferEvent): void {
 	let fromString = event.params.from.toHexString()
 	let visorTo = Visor.load(toString)
 	let visorFrom = Visor.load(fromString)
-	if (visorTo != null) {
+	
+	if (event.params.to == REWARD_HYPERVISOR) {
+		// VISR distribution event into rewards hypervisor
+		visrRate = getVisrRateInUSD()
+		distributed += visrAmount
+		visr.totalDistributed += distributed
+		visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
+	} else if (visorTo != null) {
 		// VISR transferred into visor vault (staked)
 		let stakedToken = StakedToken.load(toString + "-" + visrAddressString)
 		if (stakedToken == null) {
 			stakedToken = createStakedToken(event.params.to, visrAddress)
 		}
+		visorTo.visrStaked += visrAmount
 		stakedToken.amount += visrAmount
 		// Track total VISR staked
 		visr.totalStaked += visrAmount
 		stakedToken.save()
-		if (event.params.from == Address.fromString(VISR_DISTRIBUTOR) || event.params.from == Address.fromString(MULTISEND_APP)) {
+		if (DISTRIBUTORS.includes(event.params.from)) {
 			// Sender is fee distributor
+			recordVisrDistribution(event)
 			visrRate = getVisrRateInUSD()
 			distributed += visrAmount
 			visr.totalDistributed += distributed
@@ -63,14 +79,23 @@ export function handleTransfer(event: TransferEvent): void {
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)
 		stakedToken.amount -= visrAmount
 		// Track total VISR staked
+		visorFrom.visrStaked -= visrAmount
 		visr.totalStaked -= visrAmount
 		stakedToken.save()
 	}
+
 	visr.save()
 
 	// Update daily distributed data
-	let visrTokenDayData = updateVisrTokenDayData(event)
-	visrTokenDayData.distributed += distributed
-	visrTokenDayData.distributedUSD += distributed.toBigDecimal() * visrRate
-	visrTokenDayData.save()
+	if (distributed > ZERO_BI) {
+		let visrTokenDayDataUTC = updateVisrTokenDayData(event, ZERO_BI)
+		visrTokenDayDataUTC.distributed += distributed
+		visrTokenDayDataUTC.distributedUSD += distributed.toBigDecimal() * visrRate
+		visrTokenDayDataUTC.save()
+
+		let visrTokenDayDataEST = updateVisrTokenDayData(event, BigInt.fromI32(-5))
+		visrTokenDayDataEST.distributed += distributed
+		visrTokenDayDataEST.distributedUSD += distributed.toBigDecimal() * visrRate
+		visrTokenDayDataEST.save()
+	}
 }

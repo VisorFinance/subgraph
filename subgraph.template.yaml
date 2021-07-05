@@ -16,6 +16,7 @@ dataSources:
       entities:
         - VisrToken
         - VisrTokenDayData
+        - VisrDistribution
         - Visor
       abis:
         - name: ERC20
@@ -153,6 +154,7 @@ templates:
         - UniswapV3Deposit
         - UniswapV3Rebalance
         - UniswapV3Withdraw
+        - UniswapV3HypervisorShares
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json
@@ -165,3 +167,8 @@ templates:
           handler: handleWithdraw
         - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
           handler: handleRebalance
+      callHandlers:
+        - function: setDepositMax(uint256,uint256)
+          handler: handleSetDepositMax
+        - function: setMaxTotalSupply(uint256)
+          handler: handleSetMaxTotalSupply

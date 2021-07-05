@@ -8,9 +8,18 @@ type VisrToken @entity {
   totalDistributedUSD: BigDecimal!
 }
 
+type VisrDistribution @entity {
+  id: ID!
+  timestamp: BigInt!
+  visor: Visor!
+  amount: BigInt!
+  amountUSD: BigDecimal!
+}
+
 type VisrTokenDayData @entity {
   id: ID!
-  date: Int!
+  date: BigInt!
+  timezone: String!
   # Total VISR staked at the end of the day
   totalStaked: BigInt!
   # VISR distributed for the day
@@ -41,8 +50,11 @@ type Visor @entity {
     owner: User!
     operator: User
     tokenId: BigInt
+    visrStaked: BigInt!
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
+    hypervisorShares: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
+    visrDistributions: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
 }
 
 type VisorTemplate @entity {
@@ -88,7 +100,7 @@ type Token @entity {
   # token name
   name: String!
   # token decimals
-  decimals: BigInt!
+  decimals: Int!
 }
 
 type UniswapV3Pool @entity {
@@ -104,7 +116,7 @@ type UniswapV3HypervisorFactory @entity {
   # Hypervisor address
   id: ID!
   # Timestamp factory was created
-  created: Int!
+  created: BigInt!
   # Number of hypervisors created by factory
   hypervisorCount: BigInt!
   # Cumulative fees claimed by hypervisors from Uniswap
@@ -113,6 +125,8 @@ type UniswapV3HypervisorFactory @entity {
   protocolFeesCollectedUSD: BigDecimal!
   # Cumulative fees reinvested into pools by hypervisors
   feesReinvestedUSD: BigDecimal!
+  # Adjusted version is reduced by withdraws
+  adjustedFeesReinvestedUSD: BigDecimal!
   # TVL of all hypervisors under one factory
   tvlUSD: BigDecimal!
   hypervisors: [UniswapV3Hypervisor!]! @derivedFrom(field: "factory")
@@ -136,6 +150,10 @@ type UniswapV3Hypervisor @entity {
   # Upper tick of limit position
   limitUpper: Int!
   # All time Gross Fees claimed
+  deposit0Max: BigInt!
+  deposit1Max: BigInt!
+  totalSupply: BigInt!
+  maxTotalSupply: BigInt!
   grossFeesClaimed0: BigInt!
   grossFeesClaimed1: BigInt!
   grossFeesClaimedUSD: BigDecimal!
@@ -143,10 +161,12 @@ type UniswapV3Hypervisor @entity {
   protocolFeesCollected0: BigInt!
   protocolFeesCollected1: BigInt!
   protocolFeesCollectedUSD: BigDecimal!
-  # All time Gross fees minus protocol fees and pro-rated withdraws
+  # All time Gross fees minus protocol fees
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
+  # Adjusted version is reduced by withdraws
+  adjustedFeesReinvestedUSD: BigDecimal!
   # TVL updated every deposit/rebalance/withdraw
   tvl0: BigInt!
   tvl1: BigInt!
@@ -160,7 +180,7 @@ type UniswapV3Hypervisor @entity {
 type UniswapV3Deposit @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
@@ -172,8 +192,12 @@ type UniswapV3Deposit @entity {
 type UniswapV3Rebalance @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   tick: Int!
+  baseLower: Int!
+  baseUpper: Int!
+  limitLower: Int!
+  limitUpper: Int!
   totalAmount0: BigInt!
   totalAmount1: BigInt!
   totalAmountUSD: BigDecimal!
@@ -192,7 +216,7 @@ type UniswapV3Rebalance @entity {
 type UniswapV3Withdraw @entity {
   id: ID!
   hypervisor: UniswapV3Hypervisor!
-  timestamp: Int!
+  timestamp: BigInt!
   sender: Bytes!
   to: Bytes!
   shares: BigInt!
@@ -203,7 +227,7 @@ type UniswapV3Withdraw @entity {
 
 type UniswapV3HypervisorDayData @entity {
   id: ID!
-  date: Int!
+  date: BigInt!
   hypervisor: UniswapV3Hypervisor!
   # Deposits for the day
   deposited0: BigInt!
@@ -225,8 +249,17 @@ type UniswapV3HypervisorDayData @entity {
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
+  # Cumulative fees reinvested at the end of day
+  adjustedFeesReinvestedUSD: BigDecimal!
   # Last TVL for the day
   tvl0: BigInt!
   tvl1: BigInt!
   tvlUSD: BigDecimal!
+}
+
+type UniswapV3HypervisorShares @entity {
+  id: ID!  # HypervisorAddress-VisorAddress
+  visor: Visor!
+  hypervisor: UniswapV3Hypervisor!
+  shares: BigInt!
 }

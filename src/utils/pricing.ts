@@ -1,5 +1,4 @@
 import { Address, BigDecimal } from '@graphprotocol/graph-ts'
-import { UniswapV3Hypervisor } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import { UniswapV3Pool as PoolContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Pool"
 
 const USDC_WETH_03_POOL = '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8'

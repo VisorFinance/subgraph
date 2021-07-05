@@ -1,16 +1,24 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
-	Rebalance as RebalanceEvent
+	Rebalance as RebalanceEvent,
+	SetDepositMaxCall,
+	SetMaxTotalSupplyCall
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
+import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
-	UniswapV3Deposit,
 	UniswapV3Rebalance,
-	UniswapV3Withdraw
+	UniswapV3HypervisorShares
 } from "../../../generated/schema"
+import { 
+	createDeposit,
+	createRebalance,
+	createWithdraw,
+	getOrCreateHypervisorShares
+} from "../../utils/uniswapV3/hypervisor"
 import { updateUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getEthRateInUSD } from "../../utils/pricing"
 import { isWETH } from "../../utils/tokens"
@@ -20,24 +28,16 @@ import { ZERO_BD } from "../../utils/constants"
 
 export function handleDeposit(event: DepositEvent): void {
 
-	let hypervisorAddress = event.address.toHexString()
-
-	let deposit = new UniswapV3Deposit(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	deposit.hypervisor = hypervisorAddress
-	deposit.timestamp = event.block.timestamp.toI32()
-	deposit.sender = event.params.sender
-	deposit.to = event.params.to
-	deposit.shares = event.params.shares
-	deposit.amount0 = event.params.amount0
-	deposit.amount1 = event.params.amount1
-
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
-
-	// Reset aggregates until new amounts are calculated
-	resetAggregates(hypervisorAddress)
+	let hypervisorId = event.address.toHex()
 	
-	let pool = UniswapV3Pool.load(hypervisor.pool)
+	// Reset aggregates until new amounts are calculated
+	resetAggregates(hypervisorId)
 
+	// Create deposit event
+	let deposit = createDeposit(event)
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let pool = UniswapV3Pool.load(hypervisor.pool)
+	
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
 	let ethRate = getEthRateInUSD()
 
@@ -53,52 +53,42 @@ export function handleDeposit(event: DepositEvent): void {
 	}
 	deposit.save()
 
+	// Update visor shares
+	let hypervisorShares = getOrCreateHypervisorShares(event)
+	hypervisorShares.shares += deposit.shares
+	hypervisorShares.save()
+	// Update relevant hypervisor fields
+	hypervisor.totalSupply += deposit.shares
+	hypervisor.save()
+
+	// let adjustedFeeRatio = ZERO_BD
+	// // get existing fee/TVL ratio
+	// if (hypervisor.tvlUSD > ZERO_BD) {
+	// 	adjustedFeeRatio = hypervisor.adjustedFeesReinvestedUSD / hypervisor.tvlUSD
+	// }
 	updateTvl(event.address)
-	updateAggregates(hypervisorAddress)
+	// Deposits dilutes adjusted Fees ratio
+	// hypervisor.adjustedFeesReinvestedUSD = (hypervisor.tvlUSD - deposit.amountUSD) * adjustedFeeRatio
+	updateAggregates(hypervisorId)
 	
+	// Aggregate daily data
 	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
 	hypervisorDayData.deposited0 += deposit.amount0
     hypervisorDayData.deposited1 += deposit.amount1
     hypervisorDayData.depositedUSD += deposit.amountUSD
     hypervisorDayData.save()
-
 }
 
 export function handleRebalance(event: RebalanceEvent): void {
 
-	let hypervisorAddress = event.address.toHexString()
-	let tick = event.params.tick
-	let grossFees0 = event.params.feeAmount0
-	let grossFees1 = event.params.feeAmount1
-
-	// 10% fee is hardcoded in the contracts
-	let protocolFeeRate = BigInt.fromI32(10)
-
-	let protocolFees0 = grossFees0 / protocolFeeRate
-	let protocolFees1 = grossFees1 / protocolFeeRate
-
-	let netFees0 = grossFees0 - protocolFees0
-	let netFees1 = grossFees1 - protocolFees1
-
-	let rebalance = new UniswapV3Rebalance(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	rebalance.hypervisor = hypervisorAddress
-	rebalance.timestamp = event.block.timestamp.toI32()
-	rebalance.tick = tick
-	rebalance.totalAmount0 = event.params.totalAmount0
-	rebalance.totalAmount1 = event.params.totalAmount1
-	rebalance.grossFees0 = grossFees0
-	rebalance.grossFees1 = grossFees1
-	rebalance.protocolFees0 = protocolFees0
-	rebalance.protocolFees1 = protocolFees1
-	rebalance.netFees0 = netFees0
-	rebalance.netFees1 = netFees1
-	rebalance.totalSupply = event.params.totalSupply
-
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	let hypervisorId = event.address.toHex()
 
 	// Reset aggregates until new amounts are calculated
-	resetAggregates(hypervisorAddress)
-
+	resetAggregates(hypervisorId)
+	
+	// Create rebalance
+	let rebalance = createRebalance(event)
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
@@ -125,22 +115,27 @@ export function handleRebalance(event: RebalanceEvent): void {
 	}
 	rebalance.save()
 	
-	hypervisor.tick = tick
-	hypervisor.grossFeesClaimed0 += grossFees0
-	hypervisor.grossFeesClaimed1 += grossFees1
+	// Update relevant hypervisor fields
+	hypervisor.tick = rebalance.tick
+	hypervisor.grossFeesClaimed0 += rebalance.grossFees0
+	hypervisor.grossFeesClaimed1 += rebalance.grossFees1
 	hypervisor.grossFeesClaimedUSD += rebalance.grossFeesUSD
-	hypervisor.protocolFeesCollected0 += protocolFees0
-	hypervisor.protocolFeesCollected1 += protocolFees1
+	hypervisor.protocolFeesCollected0 += rebalance.protocolFees0
+	hypervisor.protocolFeesCollected1 += rebalance.protocolFees1
 	hypervisor.protocolFeesCollectedUSD += rebalance.protocolFeesUSD
-	hypervisor.feesReinvested0 += netFees0
-	hypervisor.feesReinvested1 += netFees1
+	hypervisor.feesReinvested0 += rebalance.netFees0
+	hypervisor.feesReinvested1 += rebalance.netFees1
 	hypervisor.feesReinvestedUSD += rebalance.netFeesUSD
 	hypervisor.save()
 
 	updateTvl(event.address)
-	updateAggregates(hypervisorAddress)
-	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	// Add net fees after adjusted fees are updated from new TVL
+	// hypervisor.adjustedFeesReinvestedUSD += rebalance.netFeesUSD
+	// hypervisor.save()
+	updateAggregates(hypervisorId)
 
+	// Aggregate daily data	
+	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
 	hypervisorDayData.grossFeesClaimed0 += hypervisor.grossFeesClaimed0
     hypervisorDayData.grossFeesClaimed1 += hypervisor.grossFeesClaimed1
     hypervisorDayData.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
@@ -155,24 +150,15 @@ export function handleRebalance(event: RebalanceEvent): void {
 
 export function handleWithdraw(event: WithdrawEvent): void {
 
-	let hypervisorAddress = event.address.toHexString()
-	let withdrawAmount0 = event.params.amount0
-	let withdrawAmount1 = event.params.amount1
+	let hypervisorId = event.address.toHex()
 
-	let withdraw = new UniswapV3Withdraw(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
-	withdraw.hypervisor = hypervisorAddress
-	withdraw.timestamp = event.block.timestamp.toI32()
-	withdraw.sender = event.params.sender
-	withdraw.to = event.params.to
-	withdraw.shares = event.params.shares
-	withdraw.amount0 = withdrawAmount0
-	withdraw.amount1 = withdrawAmount1
+	// Reset factory aggregates until new values are calculated
+	resetAggregates(hypervisorId)
 
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
-
-	resetAggregates(hypervisorAddress)
-
-	let pool = UniswapV3Pool.load(hypervisor.pool)
+	// Create Withdraw event
+	let withdraw = createWithdraw(event)
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let pool = UniswapV3Pool.load(hypervisor.pool)	
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
 	let ethRate = getEthRateInUSD()
@@ -189,12 +175,36 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	}
 	withdraw.save()
 
+	// Update visor shares
+	let hypervisorSharesId = hypervisorId + "-" + event.params.sender.toHex()
+	let hypervisorShares = UniswapV3HypervisorShares.load(hypervisorSharesId)
+	hypervisorShares.shares -= withdraw.shares
+	hypervisorShares.save()
+
+	// Update relevant hypervisor fields
+	hypervisor.totalSupply -= withdraw.shares
+	hypervisor.save()
+
 	updateTvl(event.address)
-	updateAggregates(hypervisorAddress)
+	updateAggregates(hypervisorId)
 	
+	// Aggregate daily data	
 	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
 	hypervisorDayData.withdrawn0 += withdraw.amount0
     hypervisorDayData.withdrawn1 += withdraw.amount1
     hypervisorDayData.withdrawnUSD += withdraw.amountUSD
     hypervisorDayData.save()
+}
+
+export function handleSetDepositMax(call: SetDepositMaxCall): void {
+	let hypervisor = UniswapV3Hypervisor.load(call.to.toHex())
+	hypervisor.deposit0Max = call.inputValues[0].value.toBigInt()
+	hypervisor.deposit1Max = call.inputValues[1].value.toBigInt()
+	hypervisor.save()
+}
+
+export function handleSetMaxTotalSupply(call: SetMaxTotalSupplyCall): void {
+	let hypervisor = UniswapV3Hypervisor.load(call.to.toHex())
+	hypervisor.maxTotalSupply = call.inputValues[0].value.toBigInt()
+	hypervisor.save()
 }
