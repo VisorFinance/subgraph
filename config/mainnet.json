@@ -25,11 +25,16 @@
     "uniswapV3": [
         {
             "name": "UniswapV3HypervisorFactory",
+            "factoryAddress": "0xd12fa3E3B60CFb96a735aB57a071F0f324860929",
+            "startBlock": 12767944
+        },
+        {
+            "name": "UniswapV3HypervisorFactoryBeta2",
             "factoryAddress": "0xC878c38F0Df509a833D10De892e1Cf7D361e3A67",
             "startBlock": 12615883
         },
         {
-            "name": "UniswapV3HypervisorFactoryBeta",
+            "name": "UniswapV3HypervisorFactoryBeta1",
             "factoryAddress": "0x0AC51Fb63D1915a77aB7a7Bb53B031407584dD4C",
             "startBlock": 12590273
         }
