@@ -74,6 +74,7 @@ export function handleTransfer(event: TransferEvent): void {
 			visr.totalDistributed += distributed
 			visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
 		}
+		visorTo.save()
 	} else if (visorFrom != null && event.params.value > ZERO_BI) {
 		// VISR transferred out of visor vault (unstaked)
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)
@@ -81,10 +82,11 @@ export function handleTransfer(event: TransferEvent): void {
 		// Track total VISR staked
 		visorFrom.visrStaked -= visrAmount
 		visr.totalStaked -= visrAmount
+		visorFrom.save()
 		stakedToken.save()
 	}
 
-	visr.save()
+	visr.save()	
 
 	// Update daily distributed data
 	if (distributed > ZERO_BI) {
