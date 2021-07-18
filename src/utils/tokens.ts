@@ -1,34 +1,94 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
+import { ERC20SymbolBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20SymbolBytes'
+import { ERC20NameBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20NameBytes'
+import { StaticTokenDefinition } from './staticTokenDefinition'
 import { Token, StakedToken, RewardedToken } from "../../generated/schema"
 import { ZERO_BI, WETH_ADDRESS, DEFAULT_DECIMAL } from "./constants"
 
 
+export function fetchTokenSymbol(tokenAddress: Address): string {
+  let contract = ERC20.bind(tokenAddress)
+  let contractSymbolBytes = ERC20SymbolBytes.bind(tokenAddress)
 
-export function fetchTokenDecimals(tokenAddress: Address): BigInt {
+  // try types string and bytes32 for symbol
+  let symbolValue = 'unknown'
+  let symbolResult = contract.try_symbol()
+  if (symbolResult.reverted) {
+    let symbolResultBytes = contractSymbolBytes.try_symbol()
+    if (!symbolResultBytes.reverted) {
+      // for broken pairs that have no symbol function exposed
+      if (!isNullEthValue(symbolResultBytes.value.toHexString())) {
+        symbolValue = symbolResultBytes.value.toString()
+      } else {
+        // try with the static definition
+        let staticTokenDefinition = StaticTokenDefinition.fromAddress(tokenAddress)
+        if(staticTokenDefinition != null) {
+          symbolValue = staticTokenDefinition.symbol
+        }
+      }
+    }
+  } else {
+    symbolValue = symbolResult.value
+  }
+
+  return symbolValue
+}
+
+export function fetchTokenName(tokenAddress: Address): string {
+  let contract = ERC20.bind(tokenAddress)
+  let contractNameBytes = ERC20NameBytes.bind(tokenAddress)
+
+  // try types string and bytes32 for name
+  let nameValue = 'unknown'
+  let nameResult = contract.try_name()
+  if (nameResult.reverted) {
+    let nameResultBytes = contractNameBytes.try_name()
+    if (!nameResultBytes.reverted) {
+      // for broken exchanges that have no name function exposed
+      if (!isNullEthValue(nameResultBytes.value.toHexString())) {
+        nameValue = nameResultBytes.value.toString()
+      } else {
+        // try with the static definition
+        let staticTokenDefinition = StaticTokenDefinition.fromAddress(tokenAddress)
+        if(staticTokenDefinition != null) {
+          nameValue = staticTokenDefinition.name
+        }
+      }
+    }
+  } else {
+    nameValue = nameResult.value
+  }
+
+  return nameValue
+}
+
+export function fetchTokenDecimals(tokenAddress: Address): i32 {
   let contract = ERC20.bind(tokenAddress)
   // try types uint8 for decimals
-  let decimalValue = null
+  let decimalValue = DEFAULT_DECIMAL
   let decimalResult = contract.try_decimals()
   if (!decimalResult.reverted) {
     decimalValue = decimalResult.value
+  } else {
+    // try with the static definition
+    let staticTokenDefinition = StaticTokenDefinition.fromAddress(tokenAddress)
+    if(staticTokenDefinition != null) {
+      return staticTokenDefinition.decimals
+    }
   }
 
-  return BigInt.fromI32(decimalValue as i32)
+  return decimalValue as i32
 }
 
 export function createToken(tokenAddress: Address): Token {
 
   let token = new Token(tokenAddress.toHex())
   let contract = ERC20.bind(tokenAddress)
-
-  let tokenDecimals = contract.try_decimals();
-  let tokenName = contract.try_name();
-  let tokenSymbol = contract.try_symbol();
-
-  token.decimals = !tokenDecimals.reverted ? tokenDecimals.value : DEFAULT_DECIMAL;
-  token.name = !tokenName.reverted ? tokenName.value : '';
-  token.symbol = !tokenSymbol.reverted ? tokenSymbol.value : '';
+  
+  token.symbol = fetchTokenSymbol(tokenAddress)
+  token.name = fetchTokenName(tokenAddress)
+  token.decimals = fetchTokenDecimals(tokenAddress)
 
   return token
 }
@@ -74,4 +134,8 @@ export function isWETH(tokenAddress: Address): boolean {
   } else {
     return false
   }
+}
+
+export function isNullEthValue(value: string): boolean {
+  return value == '0x0000000000000000000000000000000000000000000000000000000000000001'
 }
