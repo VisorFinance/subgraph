@@ -3,7 +3,7 @@ import { UniswapV3Hypervisor as HypervisorContract } from "../../generated/templ
 import { UniswapV3HypervisorFactory, UniswapV3Hypervisor, UniswapV3Pool } from "../../generated/schema"
 import { getExchangeRate, getEthRateInUSD } from "../utils/pricing"
 import { isWETH } from './tokens'
-import { ZERO_BD } from './constants'
+import { ZERO_BI, ZERO_BD } from './constants'
 
 
 export function resetAggregates(hypervisorAddress: string): void {
@@ -13,7 +13,6 @@ export function resetAggregates(hypervisorAddress: string): void {
 	factory.grossFeesClaimedUSD -= hypervisor.grossFeesClaimedUSD
 	factory.protocolFeesCollectedUSD -= hypervisor.protocolFeesCollectedUSD
 	factory.feesReinvestedUSD -= hypervisor.feesReinvestedUSD
-	factory.adjustedFeesReinvestedUSD -= hypervisor.adjustedFeesReinvestedUSD
 	factory.tvlUSD -= hypervisor.tvlUSD
 	factory.save()
 }
@@ -25,7 +24,6 @@ export function updateAggregates(hypervisorAddress: string): void {
 	factory.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
 	factory.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
 	factory.feesReinvestedUSD += hypervisor.feesReinvestedUSD
-	factory.adjustedFeesReinvestedUSD += hypervisor.adjustedFeesReinvestedUSD
 	factory.tvlUSD += hypervisor.tvlUSD
 	factory.save()
 }
@@ -35,12 +33,6 @@ export function updateTvl(hypervisorAddress: Address): void {
 	let contract = HypervisorContract.bind(hypervisorAddress)
 	let totalAmounts = contract.getTotalAmounts()
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress.toHexString())
-
-	// let adjustedFeeRatio = ZERO_BD
-	// // get existing fee/TVL ratio
-	// if (hypervisor.tvlUSD > ZERO_BD) {
-	// 	adjustedFeeRatio = hypervisor.adjustedFeesReinvestedUSD / hypervisor.tvlUSD
-	// }
 	
 	hypervisor.tvl0 = totalAmounts.value0
 	hypervisor.tvl1 = totalAmounts.value1
@@ -60,9 +52,11 @@ export function updateTvl(hypervisorAddress: Address): void {
 		hypervisor.tvlUSD = ZERO_BD
 	}
 
-	// // Calculate new fees based on old fee/TVL ratio
-	// hypervisor.adjustedFeesReinvestedUSD = adjustedFeeRatio * hypervisor.tvlUSD
-
+	hypervisor.totalSupply = contract.totalSupply()
+	if (hypervisor.totalSupply > ZERO_BI) {
+		hypervisor.pricePerShare = hypervisor.tvlUSD / hypervisor.totalSupply.toBigDecimal()
+	}
+	hypervisor.lastUpdated = pool.lastSwapTime
 	hypervisor.save()
 }
 

@@ -12,11 +12,12 @@ import {
 	Transfer
 } from "../../generated/VisorFactory/VisorFactory"
 import { Factory, User,	OwnerOperator, Visor, VisorTemplate } from "../../generated/schema"
+import { getOrCreateUser, getOrCreateVisor } from "../utils/visorFactory"
 import { ADDRESS_ZERO, ZERO_BI, ONE_BI } from "../utils/constants"
 
 export function handleApproval(event: Approval): void {
 	let visorId = visorAddressFromTokenId(event.params.tokenId)
-	let visor = Visor.load(visorId)
+	let visor = getOrCreateVisor(visorId)
 	visor.operator = event.params.approved.toHex()
 	visor.save()
 }
@@ -30,19 +31,12 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
 }
 
 export function handleInstanceAdded(event: InstanceAdded): void {
-	
-	let owner = event.transaction.from
-
-	let user = User.load(owner.toHex())
-	if (user == null) {
-		user = new User(owner.toHex())
-	}
+	let ownerString = event.transaction.from.toHex()
+	let user = getOrCreateUser(ownerString)
 	user.save()
 
-	let visor = new Visor(event.params.instance.toHex())
-	visor.owner = owner.toHex()
-	visor.visrStaked = ZERO_BI
-
+	let visor = getOrCreateVisor(event.params.instance.toHex())
+	visor.owner = ownerString
 	visor.save()
 }
 
@@ -74,13 +68,13 @@ export function handleTemplateAdded(event: TemplateAdded): void {
 }
 
 export function handleTransfer(event: Transfer): void {
+	let ownerString = event.params.to.toHex()
+	let user = getOrCreateUser(ownerString)
+	user.save()
+
 	let visorId = visorAddressFromTokenId(event.params.tokenId)
-	let visor = Visor.load(visorId)
-	if (visor == null) {
-		visor = new Visor(visorId)
-		visor.tokenId = event.params.tokenId
-		visor.visrStaked = ZERO_BI
-	}
-	visor.owner = event.params.to.toHex()
+	let visor = getOrCreateVisor(visorId)
+	visor.tokenId = event.params.tokenId
+	visor.owner = ownerString
 	visor.save()
 }

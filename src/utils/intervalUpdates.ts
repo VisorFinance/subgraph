@@ -31,40 +31,43 @@ export function updateVisrTokenDayData(event: ethereum.Event, utcDiffHours: BigI
 }
 
 
-export function updateUniswapV3HypervisorDayData(event: ethereum.Event): UniswapV3HypervisorDayData {
-    let hypervisor = UniswapV3Hypervisor.load(event.address.toHexString())
+export function updateAndGetUniswapV3HypervisorDayData(hypervisorAddress: string): UniswapV3HypervisorDayData {
+    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
     // hypervisorDayData.adjustedFeesReinvestedUSD = hypervisor.adjustedFeesReinvestedUSD
 
-    let hypervisorDayDataUTC = getOrCreateHypervisorDayData(event, ZERO_BI)
+    let hypervisorDayDataUTC = getOrCreateHypervisorDayData(hypervisorAddress, ZERO_BI)
+    hypervisorDayDataUTC.totalSupply = hypervisor.totalSupply
     hypervisorDayDataUTC.tvl0 = hypervisor.tvl0
     hypervisorDayDataUTC.tvl1 = hypervisor.tvl1
     hypervisorDayDataUTC.tvlUSD = hypervisor.tvlUSD
+    hypervisorDayDataUTC.reinvestedAssetsShare = hypervisor.reinvestedAssetsShare
+    hypervisorDayDataUTC.close = hypervisor.pricePerShare
 
-    // let hypervisorDayDataEST = getOrCreateHypervisorDayData(event, -5)
-    // hypervisorDayDataEST.tvl0 = hypervisor.tvl0
-    // hypervisorDayDataEST.tvl1 = hypervisor.tvl1
-    // hypervisorDayDataEST.tvlUSD = hypervisor.tvlUSD
-    // hypervisorDayDataEST.save()
+    if (hypervisor.pricePerShare > hypervisorDayDataUTC.high) {
+        hypervisorDayDataUTC.high = hypervisor.pricePerShare
+    } else if (hypervisor.pricePerShare < hypervisorDayDataUTC.low) {
+        hypervisorDayDataUTC.low = hypervisor.pricePerShare
+    }
 
     return hypervisorDayDataUTC as UniswapV3HypervisorDayData
 }
 
 
-function getOrCreateHypervisorDayData(event: ethereum.Event, utcDiffHours: BigInt): UniswapV3HypervisorDayData {
-    let timestamp = event.block.timestamp
+function getOrCreateHypervisorDayData(hypervisorAddress: string, utcDiffHours: BigInt): UniswapV3HypervisorDayData {
+    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+
     let utcDiffSeconds = utcDiffHours * SECONDS_IN_HOUR
     let timezone = (utcDiffHours == ZERO_BI) ? 'UTC' : "UTC" + utcDiffHours.toString() 
 
-    let dayNumber = (timestamp + utcDiffSeconds) / SECONDS_IN_DAY
+    let dayNumber = (hypervisor.lastUpdated + utcDiffSeconds) / SECONDS_IN_DAY
     let dayStartTimestamp = dayNumber * SECONDS_IN_DAY - utcDiffSeconds
 
-    let dayHypervisorId = event.address.toHex() + '-' + timezone + '-' + dayNumber.toString()
+    let dayHypervisorId = hypervisorAddress + '-' + timezone + '-' + dayNumber.toString()
     let hypervisorDayData = UniswapV3HypervisorDayData.load(dayHypervisorId)
     if (hypervisorDayData === null) {
         hypervisorDayData = new UniswapV3HypervisorDayData(dayHypervisorId)
         hypervisorDayData.date = dayStartTimestamp
-        // hypervisorDayData.timezone = "UTC" + utcDiffHours.toString()
-        hypervisorDayData.hypervisor = event.address.toHexString()
+        hypervisorDayData.hypervisor = hypervisorAddress
         hypervisorDayData.deposited0 = ZERO_BI
         hypervisorDayData.deposited1 = ZERO_BI
         hypervisorDayData.depositedUSD = ZERO_BD
@@ -80,10 +83,15 @@ function getOrCreateHypervisorDayData(event: ethereum.Event, utcDiffHours: BigIn
         hypervisorDayData.feesReinvested0 = ZERO_BI
         hypervisorDayData.feesReinvested1 = ZERO_BI
         hypervisorDayData.feesReinvestedUSD = ZERO_BD
-        hypervisorDayData.adjustedFeesReinvestedUSD = ZERO_BD
+        hypervisorDayData.reinvestedAssetsShare = ZERO_BD
+        hypervisorDayData.totalSupply = ZERO_BI
         hypervisorDayData.tvl0 = ZERO_BI
         hypervisorDayData.tvl1 = ZERO_BI
         hypervisorDayData.tvlUSD = ZERO_BD
+        hypervisorDayData.open = hypervisor.pricePerShare
+        hypervisorDayData.close = hypervisor.pricePerShare
+        hypervisorDayData.low = hypervisor.pricePerShare
+        hypervisorDayData.high = hypervisor.pricePerShare
     }
 
     return hypervisorDayData as UniswapV3HypervisorDayData

@@ -1,9 +1,12 @@
 import { Address } from '@graphprotocol/graph-ts'
 import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3HypervisorFactory"
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Hypervisor"
-import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"
+import { 
+    UniswapV3Hypervisor as HypervisorTemplate,
+    UniswapV3Pool as PoolTemplate
+} from "../../../generated/templates"
 import { UniswapV3Pool, UniswapV3Hypervisor, UniswapV3HypervisorFactory } from "../../../generated/schema"
-import { createToken } from "../../utils/tokens"
+import { getOrCreateToken } from "../../utils/tokens"
 import { ZERO_BI, ONE_BI, ZERO_BD } from "../../utils/constants"
 
 //Hypervisors that were created with invalid parameters and should not be indexed
@@ -26,28 +29,38 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
         factory.grossFeesClaimedUSD = ZERO_BD
         factory.protocolFeesCollectedUSD = ZERO_BD
         factory.feesReinvestedUSD = ZERO_BD
-        factory.adjustedFeesReinvestedUSD = ZERO_BD
         factory.tvlUSD = ZERO_BD
     }
     factory.hypervisorCount += ONE_BI
 
     let hypervisorContract = HypervisorContract.bind(event.params.hypervisor)
+    let hypervisorId = event.params.hypervisor.toHex()
 
-    let poolAddress = hypervisorContract.pool().toHex()
+    let poolAddress = hypervisorContract.pool()
+    let poolId = poolAddress.toHex()
     let token0Address = hypervisorContract.token0()
     let token1Address = hypervisorContract.token1()
     
-    let token0 = createToken(token0Address)
-    let token1 = createToken(token1Address)
+    let token0 = getOrCreateToken(token0Address)
+    let token1 = getOrCreateToken(token1Address)
 
-    let pool = new UniswapV3Pool(poolAddress)
-    pool.token0 = token0Address.toHex()
-    pool.token1 = token1Address.toHex()
-    pool.fee = hypervisorContract.fee()
+    let pool = UniswapV3Pool.load(poolId)
+    if (pool == null) {
+        pool = new UniswapV3Pool(poolId)
+        pool.hypervisors = []
+        pool.token0 = token0Address.toHex()
+        pool.token1 = token1Address.toHex()
+        pool.fee = hypervisorContract.fee()
+        pool.lastSwapTime = ZERO_BI
+    }
 
-    let hypervisor = new UniswapV3Hypervisor(event.params.hypervisor.toHex())
-    
-    hypervisor.pool = poolAddress
+    // Update hypervisors linked to pool
+    let hypervisors = pool.hypervisors
+    hypervisors.push(hypervisorId)
+    pool.hypervisors = hypervisors
+
+    let hypervisor = new UniswapV3Hypervisor(hypervisorId)
+    hypervisor.pool = poolId
     hypervisor.factory = factoryAddressString
     hypervisor.owner = hypervisorContract.owner()
     hypervisor.symbol = hypervisorContract.symbol()
@@ -70,10 +83,12 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     hypervisor.feesReinvested0 = ZERO_BI
     hypervisor.feesReinvested1 = ZERO_BI
     hypervisor.feesReinvestedUSD = ZERO_BD
-    hypervisor.adjustedFeesReinvestedUSD = ZERO_BD
+    hypervisor.reinvestedAssetsShare =ZERO_BD
     hypervisor.tvl0 = ZERO_BI
     hypervisor.tvl1 = ZERO_BI
     hypervisor.tvlUSD = ZERO_BD
+    hypervisor.pricePerShare = ZERO_BD
+    hypervisor.lastUpdated = event.block.timestamp
 
     token0.save()
     token1.save()
@@ -81,4 +96,5 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     hypervisor.save()
     factory.save()
     HypervisorTemplate.create(event.params.hypervisor)
+    PoolTemplate.create(poolAddress)
 }
