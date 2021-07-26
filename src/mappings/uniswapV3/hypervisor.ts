@@ -136,15 +136,15 @@ export function handleRebalance(event: RebalanceEvent): void {
 
 	// Aggregate daily data	
 	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
-	hypervisorDayData.grossFeesClaimed0 += hypervisor.grossFeesClaimed0
-    hypervisorDayData.grossFeesClaimed1 += hypervisor.grossFeesClaimed1
-    hypervisorDayData.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
-    hypervisorDayData.protocolFeesCollected0 += hypervisor.protocolFeesCollected0
-    hypervisorDayData.protocolFeesCollected1 += hypervisor.protocolFeesCollected1
-    hypervisorDayData.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
-    hypervisorDayData.feesReinvested0 += hypervisor.feesReinvested0
-    hypervisorDayData.feesReinvested1 += hypervisor.feesReinvested1
-    hypervisorDayData.feesReinvestedUSD += hypervisor.feesReinvestedUSD
+	hypervisorDayData.grossFeesClaimed0 += rebalance.grossFees0
+    hypervisorDayData.grossFeesClaimed1 += rebalance.grossFees1
+    hypervisorDayData.grossFeesClaimedUSD += rebalance.grossFeesUSD
+    hypervisorDayData.protocolFeesCollected0 += rebalance.protocolFees0
+    hypervisorDayData.protocolFeesCollected1 += rebalance.protocolFees1
+    hypervisorDayData.protocolFeesCollectedUSD += rebalance.protocolFeesUSD
+    hypervisorDayData.feesReinvested0 += rebalance.netFees0
+    hypervisorDayData.feesReinvested1 += rebalance.netFees1
+    hypervisorDayData.feesReinvestedUSD += rebalance.netFeesUSD
     hypervisorDayData.save()
 }
 
