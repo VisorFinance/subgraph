@@ -83,7 +83,6 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     hypervisor.feesReinvested0 = ZERO_BI
     hypervisor.feesReinvested1 = ZERO_BI
     hypervisor.feesReinvestedUSD = ZERO_BD
-    hypervisor.reinvestedAssetsShare =ZERO_BD
     hypervisor.tvl0 = ZERO_BI
     hypervisor.tvl1 = ZERO_BI
     hypervisor.tvlUSD = ZERO_BD

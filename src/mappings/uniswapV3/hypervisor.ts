@@ -37,7 +37,6 @@ export function handleDeposit(event: DepositEvent): void {
 	let deposit = createDeposit(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
-	let reinvestedFeesBefore = hypervisor.reinvestedAssetsShare * hypervisor.tvlUSD
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
 	let ethRate = getEthRateInUSD()
@@ -60,13 +59,6 @@ export function handleDeposit(event: DepositEvent): void {
 	hypervisorShares.save()
 
 	updateTvl(event.address)
-	
-	// Reload 
-	hypervisor = UniswapV3Hypervisor.load(hypervisorId)
-	// Recalculate with updated TVL
-	hypervisor.reinvestedAssetsShare = reinvestedFeesBefore / hypervisor.tvlUSD
-	hypervisor.save()
-
 	updateAggregates(hypervisorId)
 	
 	// Aggregate daily data
@@ -88,7 +80,6 @@ export function handleRebalance(event: RebalanceEvent): void {
 	let rebalance = createRebalance(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
-	let reinvestedFeesBefore = hypervisor.reinvestedAssetsShare * hypervisor.tvlUSD
 
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
 	let ethRate = getEthRateInUSD()
@@ -128,24 +119,19 @@ export function handleRebalance(event: RebalanceEvent): void {
 	hypervisor.save()
 
 	updateTvl(event.address)
-	//Reload
-	hypervisor = UniswapV3Hypervisor.load(hypervisorId)
-	hypervisor.reinvestedAssetsShare = (reinvestedFeesBefore + rebalance.netFeesUSD) / (hypervisor.tvlUSD + rebalance.netFeesUSD)
-	hypervisor.save()
-
 	updateAggregates(hypervisorId)
 
 	// Aggregate daily data	
 	let hypervisorDayData = updateAndGetUniswapV3HypervisorDayData(hypervisorId)
-	hypervisorDayData.grossFeesClaimed0 += hypervisor.grossFeesClaimed0
-    hypervisorDayData.grossFeesClaimed1 += hypervisor.grossFeesClaimed1
-    hypervisorDayData.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
-    hypervisorDayData.protocolFeesCollected0 += hypervisor.protocolFeesCollected0
-    hypervisorDayData.protocolFeesCollected1 += hypervisor.protocolFeesCollected1
-    hypervisorDayData.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
-    hypervisorDayData.feesReinvested0 += hypervisor.feesReinvested0
-    hypervisorDayData.feesReinvested1 += hypervisor.feesReinvested1
-    hypervisorDayData.feesReinvestedUSD += hypervisor.feesReinvestedUSD
+	hypervisorDayData.grossFeesClaimed0 += rebalance.grossFees0
+	hypervisorDayData.grossFeesClaimed1 += rebalance.grossFees1
+	hypervisorDayData.grossFeesClaimedUSD += rebalance.grossFeesUSD
+	hypervisorDayData.protocolFeesCollected0 += rebalance.protocolFees0
+	hypervisorDayData.protocolFeesCollected1 += rebalance.protocolFees1
+	hypervisorDayData.protocolFeesCollectedUSD += rebalance.protocolFeesUSD
+	hypervisorDayData.feesReinvested0 += rebalance.netFees0
+	hypervisorDayData.feesReinvested1 += rebalance.netFees1
+	hypervisorDayData.feesReinvestedUSD += rebalance.netFeesUSD
     hypervisorDayData.save()
 }
 

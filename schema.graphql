@@ -165,7 +165,6 @@ type UniswapV3Hypervisor @entity {
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
-  reinvestedAssetsShare: BigDecimal!
   # TVL updated every deposit/rebalance/withdraw
   tvl0: BigInt!
   tvl1: BigInt!
@@ -250,7 +249,6 @@ type UniswapV3HypervisorDayData @entity {
   feesReinvested0: BigInt!
   feesReinvested1: BigInt!
   feesReinvestedUSD: BigDecimal!
-  reinvestedAssetsShare: BigDecimal!
   totalSupply: BigInt!
   # Last TVL for the day
   tvl0: BigInt!

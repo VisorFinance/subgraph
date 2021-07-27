@@ -40,7 +40,6 @@ export function updateAndGetUniswapV3HypervisorDayData(hypervisorAddress: string
     hypervisorDayDataUTC.tvl0 = hypervisor.tvl0
     hypervisorDayDataUTC.tvl1 = hypervisor.tvl1
     hypervisorDayDataUTC.tvlUSD = hypervisor.tvlUSD
-    hypervisorDayDataUTC.reinvestedAssetsShare = hypervisor.reinvestedAssetsShare
     hypervisorDayDataUTC.close = hypervisor.pricePerShare
 
     if (hypervisor.pricePerShare > hypervisorDayDataUTC.high) {
@@ -83,7 +82,6 @@ function getOrCreateHypervisorDayData(hypervisorAddress: string, utcDiffHours: B
         hypervisorDayData.feesReinvested0 = ZERO_BI
         hypervisorDayData.feesReinvested1 = ZERO_BI
         hypervisorDayData.feesReinvestedUSD = ZERO_BD
-        hypervisorDayData.reinvestedAssetsShare = ZERO_BD
         hypervisorDayData.totalSupply = ZERO_BI
         hypervisorDayData.tvl0 = ZERO_BI
         hypervisorDayData.tvl1 = ZERO_BI
