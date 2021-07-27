@@ -1,4 +1,4 @@
-import { BigInt, BigDecimal, Address } from '@graphprotocol/graph-ts'
+import { BigInt, BigDecimal } from '@graphprotocol/graph-ts'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

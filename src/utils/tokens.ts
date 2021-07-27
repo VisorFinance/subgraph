@@ -1,4 +1,4 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
 import { ERC20SymbolBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20NameBytes'
@@ -81,25 +81,24 @@ export function fetchTokenDecimals(tokenAddress: Address): i32 {
   return decimalValue as i32
 }
 
-export function createToken(tokenAddress: Address): Token {
+export function getOrCreateToken(tokenAddress: Address): Token {
 
-  let token = new Token(tokenAddress.toHex())
-  let contract = ERC20.bind(tokenAddress)
-  
-  token.symbol = fetchTokenSymbol(tokenAddress)
-  token.name = fetchTokenName(tokenAddress)
-  token.decimals = fetchTokenDecimals(tokenAddress)
+  let token = Token.load(tokenAddress.toHex())
 
-  return token
+  if (token == null) {
+    token = new Token(tokenAddress.toHex())
+    token.symbol = fetchTokenSymbol(tokenAddress)
+    token.name = fetchTokenName(tokenAddress)
+    token.decimals = fetchTokenDecimals(tokenAddress)
+  }
+
+  return token as Token
 }
 
 export function createStakedToken(vaultAddress: Address, tokenAddress: Address): StakedToken {
 
-  let token = Token.load(tokenAddress.toHexString())
-  if (token == null) {
-    token = createToken(tokenAddress)
-    token.save()
-  }
+  let token = getOrCreateToken(tokenAddress)
+  token.save()
 
   let stakedTokenId = vaultAddress.toHexString() + "-" + tokenAddress.toHexString() 
   let stakedToken = new StakedToken(stakedTokenId)
@@ -112,11 +111,8 @@ export function createStakedToken(vaultAddress: Address, tokenAddress: Address):
 
 export function createRewardedToken(vaultAddress: Address, tokenAddress: Address): RewardedToken {
 
-  let token = Token.load(tokenAddress.toHexString())
-  if (token == null) {
-    token = createToken(tokenAddress)
-    token.save()
-  }
+  let token = getOrCreateToken(tokenAddress)
+  token.save()
 
   let rewardedTokenId = vaultAddress.toHexString() + "-" + tokenAddress.toHexString() 
   let rewardedToken = new RewardedToken(rewardedTokenId)

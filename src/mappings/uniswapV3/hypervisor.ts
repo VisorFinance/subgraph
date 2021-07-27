@@ -19,7 +19,7 @@ import {
 	createWithdraw,
 	getOrCreateHypervisorShares
 } from "../../utils/uniswapV3/hypervisor"
-import { updateUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
+import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getEthRateInUSD } from "../../utils/pricing"
 import { isWETH } from "../../utils/tokens"
 import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
@@ -37,7 +37,7 @@ export function handleDeposit(event: DepositEvent): void {
 	let deposit = createDeposit(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
-	
+
 	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
 	let ethRate = getEthRateInUSD()
 
@@ -57,22 +57,12 @@ export function handleDeposit(event: DepositEvent): void {
 	let hypervisorShares = getOrCreateHypervisorShares(event)
 	hypervisorShares.shares += deposit.shares
 	hypervisorShares.save()
-	// Update relevant hypervisor fields
-	hypervisor.totalSupply += deposit.shares
-	hypervisor.save()
 
-	// let adjustedFeeRatio = ZERO_BD
-	// // get existing fee/TVL ratio
-	// if (hypervisor.tvlUSD > ZERO_BD) {
-	// 	adjustedFeeRatio = hypervisor.adjustedFeesReinvestedUSD / hypervisor.tvlUSD
-	// }
 	updateTvl(event.address)
-	// Deposits dilutes adjusted Fees ratio
-	// hypervisor.adjustedFeesReinvestedUSD = (hypervisor.tvlUSD - deposit.amountUSD) * adjustedFeeRatio
 	updateAggregates(hypervisorId)
 	
 	// Aggregate daily data
-	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	let hypervisorDayData = updateAndGetUniswapV3HypervisorDayData(hypervisorId)
 	hypervisorDayData.deposited0 += deposit.amount0
     hypervisorDayData.deposited1 += deposit.amount1
     hypervisorDayData.depositedUSD += deposit.amountUSD
@@ -129,22 +119,19 @@ export function handleRebalance(event: RebalanceEvent): void {
 	hypervisor.save()
 
 	updateTvl(event.address)
-	// Add net fees after adjusted fees are updated from new TVL
-	// hypervisor.adjustedFeesReinvestedUSD += rebalance.netFeesUSD
-	// hypervisor.save()
 	updateAggregates(hypervisorId)
 
 	// Aggregate daily data	
-	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	let hypervisorDayData = updateAndGetUniswapV3HypervisorDayData(hypervisorId)
 	hypervisorDayData.grossFeesClaimed0 += rebalance.grossFees0
-    hypervisorDayData.grossFeesClaimed1 += rebalance.grossFees1
-    hypervisorDayData.grossFeesClaimedUSD += rebalance.grossFeesUSD
-    hypervisorDayData.protocolFeesCollected0 += rebalance.protocolFees0
-    hypervisorDayData.protocolFeesCollected1 += rebalance.protocolFees1
-    hypervisorDayData.protocolFeesCollectedUSD += rebalance.protocolFeesUSD
-    hypervisorDayData.feesReinvested0 += rebalance.netFees0
-    hypervisorDayData.feesReinvested1 += rebalance.netFees1
-    hypervisorDayData.feesReinvestedUSD += rebalance.netFeesUSD
+	hypervisorDayData.grossFeesClaimed1 += rebalance.grossFees1
+	hypervisorDayData.grossFeesClaimedUSD += rebalance.grossFeesUSD
+	hypervisorDayData.protocolFeesCollected0 += rebalance.protocolFees0
+	hypervisorDayData.protocolFeesCollected1 += rebalance.protocolFees1
+	hypervisorDayData.protocolFeesCollectedUSD += rebalance.protocolFeesUSD
+	hypervisorDayData.feesReinvested0 += rebalance.netFees0
+	hypervisorDayData.feesReinvested1 += rebalance.netFees1
+	hypervisorDayData.feesReinvestedUSD += rebalance.netFeesUSD
     hypervisorDayData.save()
 }
 
@@ -189,7 +176,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	updateAggregates(hypervisorId)
 	
 	// Aggregate daily data	
-	let hypervisorDayData = updateUniswapV3HypervisorDayData(event)
+	let hypervisorDayData = updateAndGetUniswapV3HypervisorDayData(hypervisorId)
 	hypervisorDayData.withdrawn0 += withdraw.amount0
     hypervisorDayData.withdrawn1 += withdraw.amount1
     hypervisorDayData.withdrawnUSD += withdraw.amountUSD
