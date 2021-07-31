@@ -367,7 +367,6 @@ templates:
       entities:
         - UniswapV3Hypervisor
         - UniswapV3HypervisorDayData
-        - UniswapV3Pool
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json
