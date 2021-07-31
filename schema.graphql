@@ -53,8 +53,8 @@ type Visor @entity {
     visrStaked: BigInt!
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
-    hypervisorShares: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
-    visrDistributions: [UniswapV3HypervisorShares!]! @derivedFrom(field: "visor")
+    hypervisorShares: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
+    visrDistributions: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
 }
 
 type VisorTemplate @entity {
@@ -260,7 +260,7 @@ type UniswapV3HypervisorDayData @entity {
   close: BigDecimal!
 }
 
-type UniswapV3HypervisorShares @entity {
+type UniswapV3HypervisorShare @entity {
   id: ID!  # HypervisorAddress-VisorAddress
   visor: Visor!
   hypervisor: UniswapV3Hypervisor!
