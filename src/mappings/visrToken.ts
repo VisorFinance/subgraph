@@ -4,7 +4,7 @@ import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI, ZERO_BD } from '../utils/constants'
-import { getVisrRateInUSD } from '../utils/pricing'
+import { getVisrRateInUSDC } from '../utils/pricing'
 import { recordVisrDistribution } from '../utils/visrToken'
 
 let DISTRIBUTORS: Array<Address> = [
@@ -14,7 +14,7 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
-let REWARD_HYPERVISOR = Address.fromString("0x40d2ebb9c93f64a5ec60afb3ccbf6398f680e0bb")
+let REWARD_HYPERVISOR = Address.fromString("0x57256381d8010dcf50daaf3421620ba9798ba7b5")
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -51,7 +51,7 @@ export function handleTransfer(event: TransferEvent): void {
 	
 	if (event.params.to == REWARD_HYPERVISOR) {
 		// VISR distribution event into rewards hypervisor
-		visrRate = getVisrRateInUSD()
+		visrRate = getVisrRateInUSDC()
 		distributed += visrAmount
 		visr.totalDistributed += distributed
 		visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
@@ -69,7 +69,7 @@ export function handleTransfer(event: TransferEvent): void {
 		if (DISTRIBUTORS.includes(event.params.from)) {
 			// Sender is fee distributor
 			recordVisrDistribution(event)
-			visrRate = getVisrRateInUSD()
+			visrRate = getVisrRateInUSDC()
 			distributed += visrAmount
 			visr.totalDistributed += distributed
 			visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate

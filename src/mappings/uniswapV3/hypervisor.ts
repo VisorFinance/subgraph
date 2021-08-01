@@ -1,4 +1,4 @@
-import { Address } from '@graphprotocol/graph-ts'
+import { Address, BigDecimal } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
@@ -11,7 +11,8 @@ import {
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
 	UniswapV3Rebalance,
-	UniswapV3HypervisorShares
+	UniswapV3HypervisorShares,
+	UniswapV3HypervisorConversion
 } from "../../../generated/schema"
 import { 
 	createDeposit,
@@ -20,10 +21,9 @@ import {
 	getOrCreateHypervisorShares
 } from "../../utils/uniswapV3/hypervisor"
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
-import { getExchangeRate, getEthRateInUSD } from "../../utils/pricing"
-import { isWETH } from "../../utils/tokens"
+import { getExchangeRate, getBaseTokenRateInUSDC } from "../../utils/pricing"
 import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
-import { ZERO_BD } from "../../utils/constants"
+import { ZERO_BD, ONE_BD } from "../../utils/constants"
 
 
 export function handleDeposit(event: DepositEvent): void {
@@ -36,17 +36,18 @@ export function handleDeposit(event: DepositEvent): void {
 	// Create deposit event
 	let deposit = createDeposit(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
-	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let ethRate = getEthRateInUSD()
-
-	if (isWETH(Address.fromString(pool.token0))) {
-		// If token0 is WETH, then we use need price0 to convert token1 to ETH
-		deposit.amountUSD = (deposit.amount1.toBigDecimal() * prices[0] + deposit.amount0.toBigDecimal()) * ethRate
-	} else if (isWETH(Address.fromString(pool.token1))) {
-		// If token1 is WETH, then we use need price1 to convert token0 to ETH
-		deposit.amountUSD = (deposit.amount0.toBigDecimal() * prices[1] + deposit.amount1.toBigDecimal()) * ethRate
+	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
+	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
+	
+	if (conversion.baseTokenIndex == 0) {
+		// If token0 is base token, then we convert token1 to the base token
+		deposit.amountUSD = (deposit.amount1.toBigDecimal() * price + deposit.amount0.toBigDecimal()) * baseTokenInUSDC
+	} else if (conversion.baseTokenIndex == 1) {
+		// If token1 is base token, then we convert token0 to the base token
+		deposit.amountUSD = (deposit.amount0.toBigDecimal() * price + deposit.amount1.toBigDecimal()) * baseTokenInUSDC
 	} else {
 		// If neither token is WETH, don't track USD
 		deposit.amountUSD = ZERO_BD
@@ -79,23 +80,24 @@ export function handleRebalance(event: RebalanceEvent): void {
 	// Create rebalance
 	let rebalance = createRebalance(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
-	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let ethRate = getEthRateInUSD()
+	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
+	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
 
-	if (isWETH(Address.fromString(pool.token0))) {
+	if (conversion.baseTokenIndex == 0) {
 		// If token0 is WETH, then we use need price0 to convert token1 to ETH
-		rebalance.totalAmountUSD = (rebalance.totalAmount1.toBigDecimal() * prices[0] + rebalance.totalAmount0.toBigDecimal()) * ethRate
-		rebalance.grossFeesUSD = (rebalance.grossFees1.toBigDecimal() * prices[0] + rebalance.grossFees0.toBigDecimal()) * ethRate
-		rebalance.protocolFeesUSD = (rebalance.protocolFees1.toBigDecimal() * prices[0] + rebalance.protocolFees0.toBigDecimal()) * ethRate
-		rebalance.netFeesUSD = (rebalance.netFees1.toBigDecimal() * prices[0] + rebalance.netFees0.toBigDecimal()) * ethRate
-	} else if (isWETH(Address.fromString(pool.token1))) {
+		rebalance.totalAmountUSD = (rebalance.totalAmount1.toBigDecimal() * price + rebalance.totalAmount0.toBigDecimal()) * baseTokenInUSDC
+		rebalance.grossFeesUSD = (rebalance.grossFees1.toBigDecimal() * price + rebalance.grossFees0.toBigDecimal()) * baseTokenInUSDC
+		rebalance.protocolFeesUSD = (rebalance.protocolFees1.toBigDecimal() * price + rebalance.protocolFees0.toBigDecimal()) * baseTokenInUSDC
+		rebalance.netFeesUSD = (rebalance.netFees1.toBigDecimal() * price + rebalance.netFees0.toBigDecimal()) * baseTokenInUSDC
+	} else if (conversion.baseTokenIndex == 1) {
 		// If token1 is WETH, then we use need price1 to convert token0 to ETH
-		rebalance.totalAmountUSD = (rebalance.totalAmount0.toBigDecimal() * prices[1] + rebalance.totalAmount1.toBigDecimal()) * ethRate
-		rebalance.grossFeesUSD = (rebalance.grossFees0.toBigDecimal() * prices[1] + rebalance.grossFees1.toBigDecimal()) * ethRate
-		rebalance.protocolFeesUSD = (rebalance.protocolFees0.toBigDecimal() * prices[1] + rebalance.protocolFees1.toBigDecimal()) * ethRate
-		rebalance.netFeesUSD = (rebalance.netFees0.toBigDecimal() * prices[1] + rebalance.netFees1.toBigDecimal()) * ethRate
+		rebalance.totalAmountUSD = (rebalance.totalAmount0.toBigDecimal() * price + rebalance.totalAmount1.toBigDecimal()) * baseTokenInUSDC
+		rebalance.grossFeesUSD = (rebalance.grossFees0.toBigDecimal() * price+ rebalance.grossFees1.toBigDecimal()) * baseTokenInUSDC
+		rebalance.protocolFeesUSD = (rebalance.protocolFees0.toBigDecimal() * price + rebalance.protocolFees1.toBigDecimal()) * baseTokenInUSDC
+		rebalance.netFeesUSD = (rebalance.netFees0.toBigDecimal() * price + rebalance.netFees1.toBigDecimal()) * baseTokenInUSDC
 	} else {
 		// If neither token is WETH, don't track USD
 		rebalance.totalAmountUSD = ZERO_BD
@@ -145,17 +147,18 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	// Create Withdraw event
 	let withdraw = createWithdraw(event)
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)	
 
-	let prices = getExchangeRate(Address.fromString(hypervisor.pool))
-	let ethRate = getEthRateInUSD()
+	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
+	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
 
-	if (isWETH(Address.fromString(pool.token0))) {
+	if (conversion.baseTokenIndex == 0) {
 		// If token0 is WETH, then we use need price0 to convert token1 to ETH
-		withdraw.amountUSD = (withdraw.amount1.toBigDecimal() * prices[0] + withdraw.amount0.toBigDecimal()) * ethRate
-	} else if (isWETH(Address.fromString(pool.token1))) {
+		withdraw.amountUSD = (withdraw.amount1.toBigDecimal() * price + withdraw.amount0.toBigDecimal()) * baseTokenInUSDC
+	} else if (conversion.baseTokenIndex == 1) {
 		// If token1 is WETH, then we use need price1 to convert token0 to ETH
-		withdraw.amountUSD = (withdraw.amount0.toBigDecimal() * prices[1] + withdraw.amount1.toBigDecimal()) * ethRate
+		withdraw.amountUSD = (withdraw.amount0.toBigDecimal() * price + withdraw.amount1.toBigDecimal()) * baseTokenInUSDC
 	} else {
 		// If neither token is WETH, don't track USD
 		withdraw.amountUSD = ZERO_BD

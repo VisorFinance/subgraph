@@ -174,7 +174,7 @@ type UniswapV3Hypervisor @entity {
   deposits: [UniswapV3Deposit!]! @derivedFrom(field: "hypervisor")
   rebalances: [UniswapV3Rebalance!]! @derivedFrom(field: "hypervisor")
   withdraws: [UniswapV3Withdraw!]! @derivedFrom(field: "hypervisor")
-  uniswapV3HypervisorDayData: [UniswapV3HypervisorDayData!]! @derivedFrom(field: "hypervisor")
+  dayData: [UniswapV3HypervisorDayData!]! @derivedFrom(field: "hypervisor")
 }
 
 type UniswapV3Deposit @entity {
@@ -265,4 +265,17 @@ type UniswapV3HypervisorShares @entity {
   visor: Visor!
   hypervisor: UniswapV3Hypervisor!
   shares: BigInt!
+}
+
+type UniswapV3HypervisorConversion @entity {
+  # Hypervisor ID
+  id: ID!
+  # Whether the base token token0 or token1
+  baseTokenIndex: Int!
+  # The base token
+  baseToken: Token!
+  # The BASE/USD pool in uniswap V3
+  usdPool: String!
+  # Whether the USD token in usdPool is token0 or token1
+  usdTokenIndex: Int!
 }
