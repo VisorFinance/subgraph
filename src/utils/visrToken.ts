@@ -1,4 +1,4 @@
-import { getVisrRateInUSD } from './pricing'
+import { getVisrRateInUSDC } from './pricing'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { VisrDistribution } from '../../generated/schema'
 
@@ -11,7 +11,7 @@ export function recordVisrDistribution(event: TransferEvent): void {
 	visrDistribution.timestamp = event.block.timestamp
 	visrDistribution.visor = event.params.to.toHex()
 	visrDistribution.amount = amount
-	let visrRate = getVisrRateInUSD()
+	let visrRate = getVisrRateInUSDC()
 	visrDistribution.amountUSD = amount.toBigDecimal() * visrRate
 	visrDistribution.save()
 }
