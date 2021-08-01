@@ -11,14 +11,14 @@ import {
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
 	UniswapV3Rebalance,
-	UniswapV3HypervisorShares,
+	UniswapV3HypervisorShare,
 	UniswapV3HypervisorConversion
 } from "../../../generated/schema"
 import { 
 	createDeposit,
 	createRebalance,
 	createWithdraw,
-	getOrCreateHypervisorShares
+	getOrCreateHypervisorShare
 } from "../../utils/uniswapV3/hypervisor"
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getBaseTokenRateInUSDC } from "../../utils/pricing"
@@ -55,9 +55,9 @@ export function handleDeposit(event: DepositEvent): void {
 	deposit.save()
 
 	// Update visor shares
-	let hypervisorShares = getOrCreateHypervisorShares(event)
-	hypervisorShares.shares += deposit.shares
-	hypervisorShares.save()
+	let hypervisorShare = getOrCreateHypervisorShare(event)
+	hypervisorShare.shares += deposit.shares
+	hypervisorShare.save()
 
 	updateTvl(event.address)
 	updateAggregates(hypervisorId)
@@ -166,10 +166,10 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	withdraw.save()
 
 	// Update visor shares
-	let hypervisorSharesId = hypervisorId + "-" + event.params.sender.toHex()
-	let hypervisorShares = UniswapV3HypervisorShares.load(hypervisorSharesId)
-	hypervisorShares.shares -= withdraw.shares
-	hypervisorShares.save()
+	let hypervisorShareId = hypervisorId + "-" + event.params.sender.toHex()
+	let hypervisorShare = UniswapV3HypervisorShare.load(hypervisorShareId)
+	hypervisorShare.shares -= withdraw.shares
+	hypervisorShare.save()
 
 	// Update relevant hypervisor fields
 	hypervisor.totalSupply -= withdraw.shares
