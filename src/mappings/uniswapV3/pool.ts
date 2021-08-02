@@ -3,7 +3,6 @@ import { Swap } from "../../../generated/templates/UniswapV3Pool/UniswapV3Pool"
 import { updateTvl } from "../../utils/aggregation"
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { UniswapV3Pool } from "../../../generated/schema"
-import { ZERO_BI } from "../../utils/constants"
 
 export function handleSwap(event: Swap): void {
 	let pool = UniswapV3Pool.load(event.address.toHex())

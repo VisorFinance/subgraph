@@ -336,7 +336,7 @@ templates:
         - UniswapV3Deposit
         - UniswapV3Rebalance
         - UniswapV3Withdraw
-        - UniswapV3HypervisorShares
+        - UniswapV3HypervisorShare
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json
@@ -367,7 +367,6 @@ templates:
       entities:
         - UniswapV3Hypervisor
         - UniswapV3HypervisorDayData
-        - UniswapV3Pool
       abis:
         - name: UniswapV3Hypervisor
           file: ./abis/UniswapV3Hypervisor.json
