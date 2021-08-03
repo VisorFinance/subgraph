@@ -57,10 +57,16 @@ export function updateTvl(hypervisorAddress: Address): void {
 		hypervisor.tvlUSD = ZERO_BD
 	}
 
+	// Update pricePerShare
 	hypervisor.totalSupply = contract.totalSupply()
 	if (hypervisor.totalSupply > ZERO_BI) {
 		hypervisor.pricePerShare = hypervisor.tvlUSD / hypervisor.totalSupply.toBigDecimal()
+	} else {
+		// Case where totalSupply is zero because all liquidity is withdrawn.
+		// In this case we need to reset pricePerShare to 0
+		hypervisor.pricePerShare = ZERO_BD
 	}
+
 	hypervisor.lastUpdated = pool.lastSwapTime
 	hypervisor.save()
 }
