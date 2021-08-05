@@ -3,19 +3,17 @@ import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/te
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
-	Rebalance as RebalanceEvent,
-	SetDepositMaxCall,
-	SetMaxTotalSupplyCall
+	Rebalance as RebalanceEvent
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
-	UniswapV3Pool,
+	Visor,
 	UniswapV3Hypervisor,
 	UniswapV3Deposit,
 	UniswapV3Rebalance,
 	UniswapV3Withdraw,
 	UniswapV3HypervisorShare
 } from "../../../generated/schema"
-import { ZERO_BI } from "../constants"
+import { ZERO_BI, ONE_BI } from "../constants"
 
 
 export function createDeposit(event: DepositEvent): UniswapV3Deposit {
@@ -97,6 +95,15 @@ export function getOrCreateHypervisorShare(event: DepositEvent): UniswapV3Hyperv
 		hypervisorShare.hypervisor = hypervisorAddress
 		hypervisorShare.visor = visorAddress
 		hypervisorShare.shares = ZERO_BI
+		// increment counts
+		let visor = Visor.load(visorAddress)
+		if (visor != null) {
+			visor.hypervisorCount += ONE_BI
+			visor.save()
+		}
+		let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+		hypervisor.visorCount += ONE_BI
+		hypervisor.save()
 	}
 
 	return hypervisorShare as UniswapV3HypervisorShare

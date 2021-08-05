@@ -80,6 +80,7 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
     hypervisor.tvl1 = ZERO_BI
     hypervisor.tvlUSD = ZERO_BD
     hypervisor.pricePerShare = ZERO_BD
+    hypervisor.visorCount = ZERO_BI
     hypervisor.lastUpdated = event.block.timestamp
     hypervisor.save()
 

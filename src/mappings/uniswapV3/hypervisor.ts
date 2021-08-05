@@ -1,4 +1,4 @@
-import { Address, BigDecimal } from '@graphprotocol/graph-ts'
+import { Address, BigDecimal, store } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
@@ -8,6 +8,7 @@ import {
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
+	Visor,
 	UniswapV3Pool,
 	UniswapV3Hypervisor,
 	UniswapV3Rebalance,
@@ -23,7 +24,7 @@ import {
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getBaseTokenRateInUSDC } from "../../utils/pricing"
 import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
-import { ZERO_BD, ONE_BD } from "../../utils/constants"
+import { ONE_BI, ZERO_BI, ZERO_BD } from "../../utils/constants"
 
 
 export function handleDeposit(event: DepositEvent): void {
@@ -166,10 +167,23 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	withdraw.save()
 
 	// Update visor shares
-	let hypervisorShareId = hypervisorId + "-" + event.params.sender.toHex()
+	let visorId = event.params.sender.toHex()
+	let hypervisorShareId = hypervisorId + "-" + visorId
 	let hypervisorShare = UniswapV3HypervisorShare.load(hypervisorShareId)
 	hypervisorShare.shares -= withdraw.shares
-	hypervisorShare.save()
+	if (hypervisorShare.shares == ZERO_BI ) {
+		// If no shares left, remove entity
+		store.remove('UniswapV3HypervisorShare', hypervisorShareId)
+		let visor = Visor.load(visorId)
+		if (visor != null) {
+			visor.hypervisorCount -= ONE_BI
+			visor.save()
+		}
+		hypervisor.visorCount -= ONE_BI
+	} else {
+		hypervisorShare.save()
+	}
+	
 
 	// Update relevant hypervisor fields
 	hypervisor.totalSupply -= withdraw.shares

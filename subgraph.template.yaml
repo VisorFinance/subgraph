@@ -154,6 +154,7 @@ templates:
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisor.ts
       entities:
+        - Visor
         - UniswapV3Hypervisor
         - UniswapV3Deposit
         - UniswapV3Rebalance
