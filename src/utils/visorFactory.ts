@@ -18,6 +18,7 @@ export function getOrCreateVisor(addressString: string): Visor {
 		visor.tokenId = ZERO_BI
 		visor.visrStaked = ZERO_BI
 		visor.owner = ADDRESS_ZERO
+		visor.hypervisorCount = ZERO_BI
 	}
 	return visor as Visor
 }

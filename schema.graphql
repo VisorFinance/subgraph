@@ -53,6 +53,7 @@ type Visor @entity {
     visrStaked: BigInt!
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
+    hypervisorCount: BigInt!
     hypervisorShares: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
     visrDistributions: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
 }
@@ -171,6 +172,8 @@ type UniswapV3Hypervisor @entity {
   tvlUSD: BigDecimal!
   pricePerShare: BigDecimal!
   lastUpdated: BigInt!
+  # Number of visors deposited into hypervisor
+  visorCount: BigInt!
   deposits: [UniswapV3Deposit!]! @derivedFrom(field: "hypervisor")
   rebalances: [UniswapV3Rebalance!]! @derivedFrom(field: "hypervisor")
   withdraws: [UniswapV3Withdraw!]! @derivedFrom(field: "hypervisor")
