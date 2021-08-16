@@ -1,6 +1,6 @@
 import { Address } from '@graphprotocol/graph-ts'
 import { Swap } from "../../../generated/templates/UniswapV3Pool/UniswapV3Pool"
-import { updateTvl } from "../../utils/aggregation"
+import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { UniswapV3Pool } from "../../../generated/schema"
 
@@ -10,7 +10,9 @@ export function handleSwap(event: Swap): void {
 	pool.save()
 
 	pool.hypervisors.forEach(hypervisorId => {
+		resetAggregates(hypervisorId)
 		updateTvl(Address.fromString(hypervisorId))
+		updateAggregates(hypervisorId)
 		let hypervisorDayData = updateAndGetUniswapV3HypervisorDayData(hypervisorId)
 		hypervisorDayData.save()
 	})
