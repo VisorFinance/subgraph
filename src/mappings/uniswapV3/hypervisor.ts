@@ -119,6 +119,10 @@ export function handleRebalance(event: RebalanceEvent): void {
 	hypervisor.feesReinvested0 += rebalance.netFees0
 	hypervisor.feesReinvested1 += rebalance.netFees1
 	hypervisor.feesReinvestedUSD += rebalance.netFeesUSD
+	hypervisor.baseLower = rebalance.baseLower
+	hypervisor.baseUpper = rebalance.baseUpper
+	hypervisor.limitLower = rebalance.limitLower
+	hypervisor.limitUpper = rebalance.limitUpper
 	hypervisor.save()
 
 	updateTvl(event.address)
