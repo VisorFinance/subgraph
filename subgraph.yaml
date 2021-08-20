@@ -18,6 +18,8 @@ dataSources:
         - VisrTokenDayData
         - VisrDistribution
         - Visor
+        - RewardHypervisor
+        - RewardHypervisorShare
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
@@ -27,6 +29,27 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/mappings/visrToken.ts
+  - kind: ethereum/contract
+    name: RewardHypervisor
+    network: mainnet
+    source:
+      address: "0x57256381d8010dcf50daaf3421620ba9798ba7b5"
+      abi: ERC20
+      startBlock: 12926408
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - RewardHypervisor
+        - RewardHypervisorShare
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mappings/RewardHypervisor.ts
   - kind: ethereum/contract
     name: VisorFactory
     network: mainnet

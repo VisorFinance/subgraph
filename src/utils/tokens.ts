@@ -1,4 +1,4 @@
-import { log, Address } from '@graphprotocol/graph-ts'
+import { Address } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
 import { ERC20SymbolBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20NameBytes'
@@ -11,7 +11,7 @@ import {
   UniswapV3Hypervisor,
   UniswapV3HypervisorConversion 
 } from "../../generated/schema"
-import { ZERO_BI, ADDRESS_ZERO, USDC_ADDRESS, WETH_ADDRESS, DEFAULT_DECIMAL } from "./constants"
+import { ZERO_BI, ZERO_BD, ADDRESS_ZERO, USDC_ADDRESS, WETH_ADDRESS, DEFAULT_DECIMAL } from "./constants"
 
 
 export function fetchTokenSymbol(tokenAddress: Address): string {
@@ -187,8 +187,6 @@ export function createConversion(address: string): void {
     let token0BaseIndex = BASE_TOKENS.indexOf(pool.token0)
     let token1BaseIndex = BASE_TOKENS.indexOf(pool.token1)
 
-    log.warning("0: {}, 1: {}", [token0BaseIndex.toString(), token1BaseIndex.toString()])
-
     // Reference arrays are in reverse order of priority. i.e. larger index take precedence
     if (token0BaseIndex > token1BaseIndex) {
       // token0 is the base token
@@ -209,6 +207,8 @@ export function createConversion(address: string): void {
       conversion.usdPool = ADDRESS_ZERO
       conversion.usdTokenIndex = -1
     }
+    conversion.priceTokenInBase = ZERO_BD
+    conversion.priceBaseInUSD = ZERO_BD
     conversion.save()
   }
 }

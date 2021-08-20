@@ -3,9 +3,10 @@ import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generat
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
-import { ADDRESS_ZERO, ZERO_BI, ZERO_BD } from '../utils/constants'
+import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, RVISR_ADDRESS } from '../utils/constants'
 import { getVisrRateInUSDC } from '../utils/pricing'
-import { recordVisrDistribution } from '../utils/visrToken'
+import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare, decreaseRewardHypervisorShares } from '../utils/rewardHypervisor'
+import { recordVisrDistribution, unstakeVisrFromVisor } from '../utils/visrToken'
 
 let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
@@ -14,7 +15,7 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
-let REWARD_HYPERVISOR = Address.fromString("0x57256381d8010dcf50daaf3421620ba9798ba7b5")
+let REWARD_HYPERVISOR = Address.fromString(RVISR_ADDRESS)
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -48,13 +49,50 @@ export function handleTransfer(event: TransferEvent): void {
 	let fromString = event.params.from.toHexString()
 	let visorTo = Visor.load(toString)
 	let visorFrom = Visor.load(fromString)
+	let rVisr = getOrCreateRewardHypervisor()
 	
 	if (event.params.to == REWARD_HYPERVISOR) {
-		// VISR distribution event into rewards hypervisor
-		visrRate = getVisrRateInUSDC()
-		distributed += visrAmount
-		visr.totalDistributed += distributed
-		visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
+		if (DISTRIBUTORS.includes(event.params.from)) {
+			// VISR distribution event into rewards hypervisor
+			visrRate = getVisrRateInUSDC()
+			distributed += visrAmount
+			// Track total amount stored in reward VISR
+			rVisr.totalVisr += distributed
+			// Tracks all time distributed
+			visr.totalDistributed += distributed
+			visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
+		} else {
+			// User deposit into reward hypervisor
+			// Update reward hypervisor total
+			rVisr.totalVisr += visrAmount
+			// Update RewardHypervisorShare
+			let rVisrShare = getOrCreateRewardHypervisorShare(fromString)
+			rVisrShare.visrDeposited += visrAmount
+			// Update visor entity
+			if (visorFrom != null) {
+				// Skip if address is not a visor vault
+				visorFrom.visrStaked += visrAmount
+				visorFrom.visrDeposited += visrAmount
+				visorFrom.save()
+			}
+			// Update visr entity
+			visr.totalStaked += visrAmount
+			rVisrShare.save()
+		}
+		rVisr.save()
+	} else if (event.params.from == REWARD_HYPERVISOR) {
+		// User withdraw from reward hypervisor
+		// Update reward hypervisor total
+		rVisr.totalVisr -= visrAmount
+		decreaseRewardHypervisorShares(toString, visrAmount, ZERO_BI)
+		// update visor entity
+		if (visorTo != null) {
+			// Skip if address is not a visor vault
+			unstakeVisrFromVisor(toString, visrAmount)
+		}
+		// update visr entity
+		visr.totalStaked -= visrAmount
+		rVisr.save()
 	} else if (visorTo != null) {
 		// VISR transferred into visor vault (staked)
 		let stakedToken = StakedToken.load(toString + "-" + visrAddressString)
@@ -62,6 +100,7 @@ export function handleTransfer(event: TransferEvent): void {
 			stakedToken = createStakedToken(event.params.to, visrAddress)
 		}
 		visorTo.visrStaked += visrAmount
+		visorTo.visrDeposited += visrAmount
 		stakedToken.amount += visrAmount
 		// Track total VISR staked
 		visr.totalStaked += visrAmount
@@ -79,10 +118,9 @@ export function handleTransfer(event: TransferEvent): void {
 		// VISR transferred out of visor vault (unstaked)
 		let stakedToken = StakedToken.load(fromString + "-" + visrAddressString)
 		stakedToken.amount -= visrAmount
+		unstakeVisrFromVisor(fromString, visrAmount)
 		// Track total VISR staked
-		visorFrom.visrStaked -= visrAmount
 		visr.totalStaked -= visrAmount
-		visorFrom.save()
 		stakedToken.save()
 	}
 

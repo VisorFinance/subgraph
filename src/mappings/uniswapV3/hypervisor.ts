@@ -58,6 +58,9 @@ export function handleDeposit(event: DepositEvent): void {
 	// Update visor shares
 	let hypervisorShare = getOrCreateHypervisorShare(event)
 	hypervisorShare.shares += deposit.shares
+	hypervisorShare.initialToken0 += deposit.amount0
+	hypervisorShare.initialToken1 += deposit.amount1
+	hypervisorShare.initialUSD += deposit.amountUSD
 	hypervisorShare.save()
 
 	updateTvl(event.address)
@@ -174,9 +177,8 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	let visorId = event.params.sender.toHex()
 	let hypervisorShareId = hypervisorId + "-" + visorId
 	let hypervisorShare = UniswapV3HypervisorShare.load(hypervisorShareId)
-	hypervisorShare.shares -= withdraw.shares
-	if (hypervisorShare.shares == ZERO_BI ) {
-		// If no shares left, remove entity
+	if (hypervisorShare.shares == withdraw.shares ) {
+		// If all shares are withdrawn, remove entity
 		store.remove('UniswapV3HypervisorShare', hypervisorShareId)
 		let visor = Visor.load(visorId)
 		if (visor != null) {
@@ -185,10 +187,14 @@ export function handleWithdraw(event: WithdrawEvent): void {
 		}
 		hypervisor.visorCount -= ONE_BI
 	} else {
+		let remainingShares = hypervisorShare.shares - withdraw.shares
+		hypervisorShare.initialToken0 = hypervisorShare.initialToken0 * remainingShares / hypervisorShare.shares
+		hypervisorShare.initialToken0 = hypervisorShare.initialToken1 * remainingShares / hypervisorShare.shares
+		hypervisorShare.initialUSD = hypervisorShare.initialUSD * remainingShares.toBigDecimal() / hypervisorShare.shares.toBigDecimal()
+		hypervisorShare.shares -= withdraw.shares
 		hypervisorShare.save()
 	}
 	
-
 	// Update relevant hypervisor fields
 	hypervisor.totalSupply -= withdraw.shares
 	hypervisor.save()

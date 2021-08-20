@@ -46,6 +46,10 @@ export function updateTvl(hypervisorAddress: Address): void {
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
 
+	conversion.priceTokenInBase = price
+	conversion.priceBaseInUSD = baseTokenInUSDC
+	conversion.save()
+
 	if (conversion.baseTokenIndex == 0) {
 		// If token0 is base token, then we convert token1 to the base token
 		hypervisor.tvlUSD = (hypervisor.tvl1.toBigDecimal() * price + hypervisor.tvl0.toBigDecimal()) * baseTokenInUSDC
