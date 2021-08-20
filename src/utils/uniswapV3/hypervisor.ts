@@ -13,7 +13,7 @@ import {
 	UniswapV3Withdraw,
 	UniswapV3HypervisorShare
 } from "../../../generated/schema"
-import { ZERO_BI, ONE_BI } from "../constants"
+import { ZERO_BI, ONE_BI, ZERO_BD } from "../constants"
 
 
 export function createDeposit(event: DepositEvent): UniswapV3Deposit {
@@ -95,6 +95,9 @@ export function getOrCreateHypervisorShare(event: DepositEvent): UniswapV3Hyperv
 		hypervisorShare.hypervisor = hypervisorAddress
 		hypervisorShare.visor = visorAddress
 		hypervisorShare.shares = ZERO_BI
+		hypervisorShare.initialToken0 = ZERO_BI
+		hypervisorShare.initialToken1 = ZERO_BI
+		hypervisorShare.initialUSD = ZERO_BD
 		// increment counts
 		let visor = Visor.load(visorAddress)
 		if (visor != null) {

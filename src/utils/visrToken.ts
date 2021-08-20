@@ -1,6 +1,7 @@
+import { BigInt } from '@graphprotocol/graph-ts'
 import { getVisrRateInUSDC } from './pricing'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
-import { VisrDistribution } from '../../generated/schema'
+import { Visor, VisrDistribution } from '../../generated/schema'
 
 
 export function recordVisrDistribution(event: TransferEvent): void {
@@ -14,4 +15,15 @@ export function recordVisrDistribution(event: TransferEvent): void {
 	let visrRate = getVisrRateInUSDC()
 	visrDistribution.amountUSD = amount.toBigDecimal() * visrRate
 	visrDistribution.save()
+}
+
+export function unstakeVisrFromVisor(visorAddress: string, amount: BigInt): void {
+
+	let visor = Visor.load(visorAddress)
+	let visrEarned = visor.visrStaked - visor.visrDeposited
+	if (amount > visrEarned) {
+		visor.visrDeposited -= amount - visrEarned
+	}
+	visor.visrStaked -= amount
+	visor.save()
 }
