@@ -209,6 +209,7 @@ export function createConversion(address: string): void {
     }
     conversion.priceTokenInBase = ZERO_BD
     conversion.priceBaseInUSD = ZERO_BD
+    conversion.hypervisor = address
     conversion.save()
   }
 }
