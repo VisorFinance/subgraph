@@ -12,6 +12,7 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
 	Address.fromString("0x354ad875a68e5d4ac69cb56df72137e638dcf4a0"),  // Distributor 2
 	Address.fromString("0x3e738bef54e64be0c99759e0c77d9c72c5a8666e"),  // Distributor 3
+	Address.fromString("0x242814d6f31fc7ddbef77e8888a3b6cf96f44d68"),  // Distributor 4
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
@@ -100,7 +101,6 @@ export function handleTransfer(event: TransferEvent): void {
 			stakedToken = createStakedToken(event.params.to, visrAddress)
 		}
 		visorTo.visrStaked += visrAmount
-		visorTo.visrDeposited += visrAmount
 		stakedToken.amount += visrAmount
 		// Track total VISR staked
 		visr.totalStaked += visrAmount
@@ -112,6 +112,8 @@ export function handleTransfer(event: TransferEvent): void {
 			distributed += visrAmount
 			visr.totalDistributed += distributed
 			visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
+		} else {
+			visorTo.visrDeposited += visrAmount
 		}
 		visorTo.save()
 	} else if (visorFrom != null && event.params.value > ZERO_BI) {
