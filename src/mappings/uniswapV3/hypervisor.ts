@@ -189,7 +189,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	} else {
 		let remainingShares = hypervisorShare.shares - withdraw.shares
 		hypervisorShare.initialToken0 = hypervisorShare.initialToken0 * remainingShares / hypervisorShare.shares
-		hypervisorShare.initialToken0 = hypervisorShare.initialToken1 * remainingShares / hypervisorShare.shares
+		hypervisorShare.initialToken1 = hypervisorShare.initialToken1 * remainingShares / hypervisorShare.shares
 		hypervisorShare.initialUSD = hypervisorShare.initialUSD * remainingShares.toBigDecimal() / hypervisorShare.shares.toBigDecimal()
 		hypervisorShare.shares -= withdraw.shares
 		hypervisorShare.save()

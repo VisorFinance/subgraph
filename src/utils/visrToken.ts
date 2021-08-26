@@ -23,6 +23,11 @@ export function unstakeVisrFromVisor(visorAddress: string, amount: BigInt): void
 	let visrEarned = visor.visrStaked - visor.visrDeposited
 	if (amount > visrEarned) {
 		visor.visrDeposited -= amount - visrEarned
+		// If unstake amount is larger than earned, then all earned visr is realized
+		visor.visrEarnedRealized += visrEarned
+	} else {
+		// If unstake amount <= earned, then only unstaked amount is realized
+		visor.visrEarnedRealized += amount
 	}
 	visor.visrStaked -= amount
 	visor.save()
