@@ -8,21 +8,21 @@ import {
 } from '../utils/rewardHypervisor'
 
 export function handleTransfer(event: TransferEvent): void {
-	let rVisr = getOrCreateRewardHypervisor()
+	let vVisr = getOrCreateRewardHypervisor()
 	let shares = event.params.value
 
 	if (event.params.from == Address.fromString(ADDRESS_ZERO)) {
 		// Mint shares
-		let rVisrShare = getOrCreateRewardHypervisorShare(event.params.to.toHex())
-		rVisrShare.shares += shares
-		rVisr.totalSupply += shares
+		let vVisrShare = getOrCreateRewardHypervisorShare(event.params.to.toHex())
+		vVisrShare.shares += shares
+		vVisr.totalSupply += shares
 
-		rVisrShare.save()
-		rVisr.save()
+		vVisrShare.save()
+		vVisr.save()
 	} else if (event.params.to == Address.fromString(ADDRESS_ZERO)) {
 		// Burn shares
 		decreaseRewardHypervisorShares(event.params.from.toHex(), ZERO_BI, shares)
-		rVisr.totalSupply -= shares
-		rVisr.save()
+		vVisr.totalSupply -= shares
+		vVisr.save()
 	}
 }

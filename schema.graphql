@@ -16,6 +16,23 @@ type VisrDistribution @entity {
   amountUSD: BigDecimal!
 }
 
+type EthToken @entity {
+  id: ID!
+  decimals: Int!
+  totalDistributed: BigInt!
+  totalDistributedUSD: BigDecimal!
+}
+
+type EthDistribution @entity {
+  id: ID!
+  timestamp: BigInt!
+  visor: Visor!
+  amount: BigInt!
+  amountUSD: BigDecimal!
+  tx: String!
+  index: Int!
+}
+
 type RewardHypervisor @entity {
   id: ID!
   totalVisr: BigInt!
@@ -38,6 +55,14 @@ type VisrTokenDayData @entity {
   # Total VISR staked at the end of the day
   totalStaked: BigInt!
   # VISR distributed for the day
+  distributed: BigInt!
+  distributedUSD: BigDecimal!
+}
+
+type EthDayData @entity {
+  id: ID!
+  date: BigInt!
+  timezone: String!
   distributed: BigInt!
   distributedUSD: BigDecimal!
 }
@@ -68,7 +93,8 @@ type Visor @entity {
     visrStaked: BigInt!
     visrDeposited: BigInt!
     visrEarnedRealized: BigInt!
-    rvisrShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
+    ethEarned: BigInt!
+    vVisrShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
     hypervisorCount: BigInt!
@@ -136,8 +162,6 @@ type UniswapV3Pool @entity {
 type UniswapV3HypervisorFactory @entity {
   # Hypervisor address
   id: ID!
-  # Timestamp factory was created
-  created: BigInt!
   # Number of hypervisors created by factory
   hypervisorCount: BigInt!
   # Cumulative fees claimed by hypervisors from Uniswap

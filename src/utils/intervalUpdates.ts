@@ -1,9 +1,37 @@
 import { ethereum, BigInt } from '@graphprotocol/graph-ts'
-import { VisrToken, VisrTokenDayData, UniswapV3HypervisorDayData, UniswapV3Hypervisor } from '../../generated/schema'
+import {
+    EthDayData,
+    VisrToken,
+    VisrTokenDayData,
+    UniswapV3HypervisorDayData,
+    UniswapV3Hypervisor 
+} from '../../generated/schema'
 import { ZERO_BI, ZERO_BD } from './constants'
 
 let SECONDS_IN_HOUR = BigInt.fromI32(60 * 60)
 let SECONDS_IN_DAY = BigInt.fromI32(60 * 60 * 24)
+
+
+export function getEthDayData(event: ethereum.Event, utcDiffHours: BigInt): EthDayData {
+    let timestamp = event.block.timestamp
+    let utcDiffSeconds = utcDiffHours * SECONDS_IN_HOUR
+    let timezone = (utcDiffHours == ZERO_BI) ? 'UTC' : "UTC" + utcDiffHours.toString() 
+
+    let dayNumber = (timestamp + utcDiffSeconds) / SECONDS_IN_DAY
+    let dayStartTimestamp = dayNumber * SECONDS_IN_DAY - utcDiffSeconds
+    let dayId = timezone + '-' + dayNumber.toString()
+
+    let ethDayData = EthDayData.load(dayId)
+    if (ethDayData == null) {
+        ethDayData = new EthDayData(dayId)
+        ethDayData.date = dayStartTimestamp
+        ethDayData.timezone = timezone
+        ethDayData.distributed = ZERO_BI
+        ethDayData.distributedUSD = ZERO_BD
+    }
+
+    return ethDayData as EthDayData
+}
 
 export function updateVisrTokenDayData(event: ethereum.Event, utcDiffHours: BigInt): VisrTokenDayData {
     let timestamp = event.block.timestamp

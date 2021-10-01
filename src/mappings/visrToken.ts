@@ -3,7 +3,7 @@ import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generat
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
-import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, RVISR_ADDRESS } from '../utils/constants'
+import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, VVISR_ADDRESS } from '../utils/constants'
 import { getVisrRateInUSDC } from '../utils/pricing'
 import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare, decreaseRewardHypervisorShares } from '../utils/rewardHypervisor'
 import { recordVisrDistribution, unstakeVisrFromVisor } from '../utils/visrToken'
@@ -16,7 +16,7 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
-let REWARD_HYPERVISOR = Address.fromString(RVISR_ADDRESS)
+let REWARD_HYPERVISOR = Address.fromString(VVISR_ADDRESS)
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -50,7 +50,7 @@ export function handleTransfer(event: TransferEvent): void {
 	let fromString = event.params.from.toHexString()
 	let visorTo = Visor.load(toString)
 	let visorFrom = Visor.load(fromString)
-	let rVisr = getOrCreateRewardHypervisor()
+	let vVisr = getOrCreateRewardHypervisor()
 	
 	if (event.params.to == REWARD_HYPERVISOR) {
 		if (DISTRIBUTORS.includes(event.params.from)) {
@@ -58,17 +58,17 @@ export function handleTransfer(event: TransferEvent): void {
 			visrRate = getVisrRateInUSDC()
 			distributed += visrAmount
 			// Track total amount stored in reward VISR
-			rVisr.totalVisr += distributed
+			vVisr.totalVisr += distributed
 			// Tracks all time distributed
 			visr.totalDistributed += distributed
 			visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
 		} else {
 			// User deposit into reward hypervisor
 			// Update reward hypervisor total
-			rVisr.totalVisr += visrAmount
+			vVisr.totalVisr += visrAmount
 			// Update RewardHypervisorShare
-			let rVisrShare = getOrCreateRewardHypervisorShare(fromString)
-			rVisrShare.visrDeposited += visrAmount
+			let vVisrShare = getOrCreateRewardHypervisorShare(fromString)
+			vVisrShare.visrDeposited += visrAmount
 			// Update visor entity
 			if (visorFrom != null) {
 				// Skip if address is not a visor vault
@@ -78,13 +78,13 @@ export function handleTransfer(event: TransferEvent): void {
 			}
 			// Update visr entity
 			visr.totalStaked += visrAmount
-			rVisrShare.save()
+			vVisrShare.save()
 		}
-		rVisr.save()
+		vVisr.save()
 	} else if (event.params.from == REWARD_HYPERVISOR) {
 		// User withdraw from reward hypervisor
 		// Update reward hypervisor total
-		rVisr.totalVisr -= visrAmount
+		vVisr.totalVisr -= visrAmount
 		decreaseRewardHypervisorShares(toString, visrAmount, ZERO_BI)
 		// update visor entity
 		if (visorTo != null) {
@@ -93,7 +93,7 @@ export function handleTransfer(event: TransferEvent): void {
 		}
 		// update visr entity
 		visr.totalStaked -= visrAmount
-		rVisr.save()
+		vVisr.save()
 	} else if (visorTo != null) {
 		// VISR transferred into visor vault (staked)
 		let stakedToken = StakedToken.load(toString + "-" + visrAddressString)
