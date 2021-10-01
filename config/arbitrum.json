@@ -1,0 +1,32 @@
+{
+    "network": "arbitrum-one",
+    "VisrToken": [{
+        "name": "VisrToken",
+        "address": "0x995c235521820f2637303ca1970c7c044583df44",
+        "startBlock": 364449
+    }],
+    "VisorFactory": [{
+        "name": "VisorFactory",
+        "address": "0x3beda0fc7d1dfa38091492c03a90955b16815a0f",
+        "startBlock": 364302
+    }],
+    "uniswapV3HypervisorFactory": [
+        {
+            "name": "UniswapV3HypervisorFactory",
+            "address": "0x3C5e1BFA4CE09e3F8494C98aAE6960B5fB389aBC",
+            "startBlock": 746075
+        }
+    ],
+    "uniswapV3HypervisorOrphan": [
+        {
+            "name": "WethUsdt",
+            "address": "0xb70A67cb2cE5D49768925D2De568267e79AA106B",
+            "startBlock": 854958
+        },
+        {
+            "name": "WethUsdc",
+            "address": "0xe2A08B8Dfa925D8e05F07eeFCEdc6728a20234F8",
+            "startBlock": 855145
+        }
+    ]
+}

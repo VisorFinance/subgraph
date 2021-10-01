@@ -1,11 +1,9 @@
-import { Address, BigDecimal } from '@graphprotocol/graph-ts'
+import { Address, BigDecimal, dataSource } from '@graphprotocol/graph-ts'
 import { UniswapV3Pool as PoolContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Pool"
 import { getOrCreateToken, isUSDC, isZero } from "./tokens"
-import { ONE_BD, ZERO_BD } from "./constants"
+import { ADDRESS_ZERO, ONE_BD, ZERO_BD, constantAddresses } from "./constants"
 import { UniswapV3HypervisorConversion } from "../../generated/schema"
 
-const USDC_WETH_03_POOL = '0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8'
-const WETH_VISR_03_POOL = "0x9a9cf34c3892acdb61fb7ff17941d8d81d279c75"
 
 let USDC_DECIMAL_FACTOR = 10 ** 6
 let Q192 = 2 ** 192
@@ -18,20 +16,36 @@ export function getExchangeRate(poolAddress: Address, baseTokenIndex: i32): BigD
     let denom = BigDecimal.fromString(Q192.toString())
     
     let price = ZERO_BD
-    if (baseTokenIndex == 0) {
+    if (baseTokenIndex == 0 && num != ZERO_BD) {
         price = denom / num  // This is rate of token1 in token0
-    } else if (baseTokenIndex == 1) {
+    } else if (baseTokenIndex == 1 && denom != ZERO_BD) {
         price = num / denom  // This is rate of token0 in token1
     }
     return price
 }
 
+export function getEthRateInUSDC(): BigDecimal{
+
+    let addressLookup = constantAddresses.network(dataSource.network())
+    let poolAddress = addressLookup.get("WETH-USDC") as string
+
+    let ethInUsdcRate = getExchangeRate(Address.fromString(poolAddress), 0)
+    let rate = ethInUsdcRate / BigDecimal.fromString(USDC_DECIMAL_FACTOR.toString())
+
+    return rate as BigDecimal
+}
+
 export function getVisrRateInUSDC(): BigDecimal{
 
-    let visrInEthRate = getExchangeRate(Address.fromString(WETH_VISR_03_POOL), 0)
-    let ethInUsdcRate = getExchangeRate(Address.fromString(USDC_WETH_03_POOL), 0)
+    let addressLookup = constantAddresses.network(dataSource.network())
+    let poolAddressVisr = addressLookup.get("WETH-VISR") as string
+    let poolAddressUsdc = addressLookup.get("WETH-USDC") as string
 
-    return visrInEthRate * ethInUsdcRate / BigDecimal.fromString(USDC_DECIMAL_FACTOR.toString())
+    let visrInEthRate = getExchangeRate(Address.fromString(poolAddressVisr), 0)
+    let ethInUsdcRate = getExchangeRate(Address.fromString(poolAddressUsdc), 0)
+    let rate = visrInEthRate * ethInUsdcRate / BigDecimal.fromString(USDC_DECIMAL_FACTOR.toString())
+
+    return rate as BigDecimal    
 }
 
 export function getBaseTokenRateInUSDC(hypervisorId: string): BigDecimal {

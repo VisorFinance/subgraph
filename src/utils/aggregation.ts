@@ -5,6 +5,7 @@ import {
 	UniswapV3Hypervisor,
 	UniswapV3Pool,
 	UniswapV3HypervisorConversion } from "../../generated/schema"
+import { getOrCreateFactory } from "../utils/uniswapV3/hypervisorFactory"
 import { getExchangeRate, getBaseTokenRateInUSDC } from "../utils/pricing"
 import { ZERO_BI, ZERO_BD } from './constants'
 
@@ -12,7 +13,7 @@ import { ZERO_BI, ZERO_BD } from './constants'
 export function resetAggregates(hypervisorAddress: string): void {
 	// Resets aggregates in factory
 	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
-	let factory = UniswapV3HypervisorFactory.load(hypervisor.factory)
+	let factory = getOrCreateFactory(hypervisor.factory)
 	factory.grossFeesClaimedUSD -= hypervisor.grossFeesClaimedUSD
 	factory.protocolFeesCollectedUSD -= hypervisor.protocolFeesCollectedUSD
 	factory.feesReinvestedUSD -= hypervisor.feesReinvestedUSD

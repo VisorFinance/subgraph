@@ -1,8 +1,9 @@
-import { Address } from '@graphprotocol/graph-ts'
+import { log, Address, dataSource } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
 import { ERC20SymbolBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20NameBytes'
 import { StaticTokenDefinition } from './staticTokenDefinition'
+import { BaseTokenDefinition } from './baseTokenDefinition'
 import { 
   Token,
   StakedToken,
@@ -11,7 +12,7 @@ import {
   UniswapV3Hypervisor,
   UniswapV3HypervisorConversion 
 } from "../../generated/schema"
-import { ZERO_BI, ZERO_BD, ADDRESS_ZERO, USDC_ADDRESS, WETH_ADDRESS, DEFAULT_DECIMAL } from "./constants"
+import { ZERO_BI, ZERO_BD, ADDRESS_ZERO, DEFAULT_DECIMAL, constantAddresses } from "./constants"
 
 
 export function fetchTokenSymbol(tokenAddress: Address): string {
@@ -139,8 +140,10 @@ function isToken(tokenAddress: Address, refAddress: Address): boolean {
 }
 
 export function isUSDC(tokenAddress: Address): boolean {
-  return isToken(tokenAddress, Address.fromString(USDC_ADDRESS))
-}ADDRESS_ZERO
+  let addressLookup = constantAddresses.network(dataSource.network())
+  let usdcAddress = addressLookup.get('USDC') as string
+  return isToken(tokenAddress, Address.fromString(usdcAddress))
+}
 
 export function isZero(tokenAddress: Address): boolean {
   return isToken(tokenAddress, Address.fromString(ADDRESS_ZERO))
@@ -150,33 +153,8 @@ export function isNullEthValue(value: string): boolean {
   return value == '0x0000000000000000000000000000000000000000000000000000000000000001'
 }
 
-
-// These needs to be in reverse order of priority
-let BASE_TOKENS: Array<string> = [
-    "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",  // WBTC
-    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",  // WETH
-    "0x6b175474e89094c44da98b954eedeac495271d0f",  // DAI
-    "0xdac17f958d2ee523a2206206994597c13d831ec7",  // USDT
-    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"   // USDC
-]
-
-let CONVERSION_POOLS: Array<string> = [
-    "0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",  // WBTC-USDC 0.3%
-    "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",  // USDC-WETH 0.3%
-    "0x6c6bc977e13df9b0de53b251522280bb72383700",  // DAI-USDC 0.05%
-    "0x7858e59e0c01ea06df3af3d20ac7b0003275d4bf",  // USDC-USDT 0.05%
-    "0x0000000000000000000000000000000000000000"
-]
-
-let USD_TOKEN_INDEX: Array<i32> = [
-    1,
-    0,
-    1,
-    0,
-    -1,
-]
-
 export function createConversion(address: string): void {
+
   let hypervisor = UniswapV3Hypervisor.load(address)
   let pool = UniswapV3Pool.load(hypervisor.pool)
   let conversion = UniswapV3HypervisorConversion.load(address)
@@ -184,22 +162,30 @@ export function createConversion(address: string): void {
 
   if (conversion == null) {
     conversion = new UniswapV3HypervisorConversion(address)
-    let token0BaseIndex = BASE_TOKENS.indexOf(pool.token0)
-    let token1BaseIndex = BASE_TOKENS.indexOf(pool.token1)
+
+    let baseTokenLookup = BaseTokenDefinition.network(dataSource.network())
+    let token0Lookup = baseTokenLookup.get(pool.token0)
+    if (token0Lookup == null) {
+      token0Lookup = BaseTokenDefinition.nonBase()
+    }
+    let token1Lookup = baseTokenLookup.get(pool.token1)
+    if (token1Lookup == null) {
+      token1Lookup = BaseTokenDefinition.nonBase()
+    }
 
     // Reference arrays are in reverse order of priority. i.e. larger index take precedence
-    if (token0BaseIndex > token1BaseIndex) {
+    if (token0Lookup.priority > token1Lookup.priority) {
       // token0 is the base token
       conversion.baseToken = pool.token0
       conversion.baseTokenIndex = 0
-      conversion.usdPool = CONVERSION_POOLS[token0BaseIndex]
-      conversion.usdTokenIndex = USD_TOKEN_INDEX[token0BaseIndex]
-    } else if (token1BaseIndex > token0BaseIndex) {
+      conversion.usdPool = token0Lookup.pool
+      conversion.usdTokenIndex = token0Lookup.usdTokenIdx
+    } else if (token1Lookup.priority > token0Lookup.priority) {
       // token1 is the base token
       conversion.baseToken = pool.token1
       conversion.baseTokenIndex = 1
-      conversion.usdPool = CONVERSION_POOLS[token1BaseIndex]
-      conversion.usdTokenIndex = USD_TOKEN_INDEX[token1BaseIndex]
+      conversion.usdPool = token1Lookup.pool
+      conversion.usdTokenIndex = token1Lookup.usdTokenIdx
     } else {
       // This means token0 == token1 == -1, unidentified base token
       conversion.baseToken = ADDRESS_ZERO

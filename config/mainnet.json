@@ -1,5 +1,20 @@
 {
     "network": "mainnet",
+    "VisrToken": [{
+        "name": "VisrToken",
+        "address": "0xF938424F7210f31dF2Aee3011291b658f872e91e",
+        "startBlock": 12025310
+    }],
+    "RewardHypervisor": [{
+        "name": "RewardHypervisor",
+        "address": "0x57256381d8010dcf50daaf3421620ba9798ba7b5",
+        "startBlock": 12926408
+    }],
+    "VisorFactory": [{
+        "name": "VisorFactory",
+        "address": "0xae03233307865623aaef76da9ade669b86e6f20a",
+        "startBlock": 12013637
+    }],
     "liquidityMining": [
         {
             "name": "Hypervisor",
@@ -22,21 +37,40 @@
             "startBlock": 12108528
         }
     ],
-    "uniswapV3": [
+    "uniswapV3HypervisorFactory": [
         {
             "name": "UniswapV3HypervisorFactory",
-            "factoryAddress": "0xd12fa3E3B60CFb96a735aB57a071F0f324860929",
+            "address": "0xd12fa3E3B60CFb96a735aB57a071F0f324860929",
             "startBlock": 12767944
         },
         {
             "name": "UniswapV3HypervisorFactoryBeta2",
-            "factoryAddress": "0xC878c38F0Df509a833D10De892e1Cf7D361e3A67",
+            "address": "0xC878c38F0Df509a833D10De892e1Cf7D361e3A67",
             "startBlock": 12615883
         },
         {
             "name": "UniswapV3HypervisorFactoryBeta1",
-            "factoryAddress": "0x0AC51Fb63D1915a77aB7a7Bb53B031407584dD4C",
+            "address": "0x0AC51Fb63D1915a77aB7a7Bb53B031407584dD4C",
             "startBlock": 12590273
+        }
+    ],
+    "uniswapV3HypervisorOrphan": [
+        {
+            "name": "TCR-ETH",
+            "address": "0x8cd73cb1e1fa35628e36b8c543c5f825cd4e77f1",
+            "startBlock": 13328071
+        }
+    ],
+    "feeDistributor": [
+        {
+            "name": "FeeDistributor",
+            "address": "0x07432C021f0A65857a3Ab608600B9FEABF568EA0",
+            "startBlock": 13129847
+        },
+        {
+            "name": "FeeDistributor1",
+            "address": "0x8451122f06616baff7feb10afc2c4f4132fc4709",
+            "startBlock": 13129208  
         }
     ]
 }

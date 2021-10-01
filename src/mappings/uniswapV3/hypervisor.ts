@@ -19,6 +19,7 @@ import {
 	createDeposit,
 	createRebalance,
 	createWithdraw,
+	getOrCreateHypervisor,
 	getOrCreateHypervisorShare
 } from "../../utils/uniswapV3/hypervisor"
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
@@ -36,7 +37,7 @@ export function handleDeposit(event: DepositEvent): void {
 
 	// Create deposit event
 	let deposit = createDeposit(event)
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
@@ -83,7 +84,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 	
 	// Create rebalance
 	let rebalance = createRebalance(event)
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
@@ -154,7 +155,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 
 	// Create Withdraw event
 	let withdraw = createWithdraw(event)
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)	
 
@@ -177,22 +178,24 @@ export function handleWithdraw(event: WithdrawEvent): void {
 	let visorId = event.params.sender.toHex()
 	let hypervisorShareId = hypervisorId + "-" + visorId
 	let hypervisorShare = UniswapV3HypervisorShare.load(hypervisorShareId)
-	if (hypervisorShare.shares == withdraw.shares ) {
-		// If all shares are withdrawn, remove entity
-		store.remove('UniswapV3HypervisorShare', hypervisorShareId)
-		let visor = Visor.load(visorId)
-		if (visor != null) {
-			visor.hypervisorCount -= ONE_BI
-			visor.save()
+	if (hypervisorShare != null) {
+		if (hypervisorShare.shares == withdraw.shares ) {
+			// If all shares are withdrawn, remove entity
+			store.remove('UniswapV3HypervisorShare', hypervisorShareId)
+			let visor = Visor.load(visorId)
+			if (visor != null) {
+				visor.hypervisorCount -= ONE_BI
+				visor.save()
+			}
+			hypervisor.visorCount -= ONE_BI
+		} else {
+			let remainingShares = hypervisorShare.shares - withdraw.shares
+			hypervisorShare.initialToken0 = hypervisorShare.initialToken0 * remainingShares / hypervisorShare.shares
+			hypervisorShare.initialToken1 = hypervisorShare.initialToken1 * remainingShares / hypervisorShare.shares
+			hypervisorShare.initialUSD = hypervisorShare.initialUSD * remainingShares.toBigDecimal() / hypervisorShare.shares.toBigDecimal()
+			hypervisorShare.shares -= withdraw.shares
+			hypervisorShare.save()
 		}
-		hypervisor.visorCount -= ONE_BI
-	} else {
-		let remainingShares = hypervisorShare.shares - withdraw.shares
-		hypervisorShare.initialToken0 = hypervisorShare.initialToken0 * remainingShares / hypervisorShare.shares
-		hypervisorShare.initialToken1 = hypervisorShare.initialToken1 * remainingShares / hypervisorShare.shares
-		hypervisorShare.initialUSD = hypervisorShare.initialUSD * remainingShares.toBigDecimal() / hypervisorShare.shares.toBigDecimal()
-		hypervisorShare.shares -= withdraw.shares
-		hypervisorShare.save()
 	}
 	
 	// Update relevant hypervisor fields
@@ -211,14 +214,14 @@ export function handleWithdraw(event: WithdrawEvent): void {
 }
 
 export function handleSetDepositMax(call: SetDepositMaxCall): void {
-	let hypervisor = UniswapV3Hypervisor.load(call.to.toHex())
+	let hypervisor = getOrCreateHypervisor(call.to, call.block.timestamp)
 	hypervisor.deposit0Max = call.inputValues[0].value.toBigInt()
 	hypervisor.deposit1Max = call.inputValues[1].value.toBigInt()
 	hypervisor.save()
 }
 
 export function handleSetMaxTotalSupply(call: SetMaxTotalSupplyCall): void {
-	let hypervisor = UniswapV3Hypervisor.load(call.to.toHex())
+	let hypervisor = getOrCreateHypervisor(call.to, call.block.timestamp)
 	hypervisor.maxTotalSupply = call.inputValues[0].value.toBigInt()
 	hypervisor.save()
 }

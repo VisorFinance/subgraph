@@ -2,13 +2,14 @@ specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
+  {{#VisrToken}}
   - kind: ethereum/contract
-    name: VisrToken
-    network: mainnet
+    name: {{name}}
+    network: {{network}}
     source:
-      address: "0xF938424F7210f31dF2Aee3011291b658f872e91e"
+      address: "{{address}}"
       abi: ERC20
-      startBlock: 12025310
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -29,13 +30,15 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/mappings/visrToken.ts
+  {{/VisrToken}}
+  {{#RewardHypervisor}}
   - kind: ethereum/contract
-    name: RewardHypervisor
-    network: mainnet
+    name: {{name}}
+    network: {{network}}
     source:
-      address: "0x57256381d8010dcf50daaf3421620ba9798ba7b5"
+      address: "{{address}}"
       abi: ERC20
-      startBlock: 12926408
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -50,13 +53,15 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/mappings/RewardHypervisor.ts
+  {{/RewardHypervisor}}
+  {{#VisorFactory}}
   - kind: ethereum/contract
-    name: VisorFactory
-    network: mainnet
+    name: {{name}}
+    network: {{network}}
     source:
-      address: "0xae03233307865623aaef76da9ade669b86e6f20a"
+      address: "{{address}}"
       abi: VisorFactory
-      startBlock: 12013637
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -90,10 +95,11 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/mappings/visorFactory.ts
+  {{/VisorFactory}}
   {{#liquidityMining}}
   - kind: ethereum/contract
     name: {{name}}
-    network: mainnet
+    network: {{network}}
     source:
       address: "{{address}}"
       abi: Hypervisor
@@ -131,13 +137,13 @@ dataSources:
         - event: VaultFactoryRemoved(address)
           handler: handleVaultFactoryRemoved
       file: ./src/mappings/hypervisor.ts
-    {{/liquidityMining}}
-  {{#uniswapV3}}
+  {{/liquidityMining}}
+  {{#uniswapV3HypervisorFactory}}
   - kind: ethereum/contract
     name: {{name}}
-    network: mainnet
+    network: {{network}}
     source:
-      address: "{{factoryAddress}}"
+      address: "{{address}}"
       abi: UniswapV3HypervisorFactory
       startBlock: {{startBlock}}
     mapping:
@@ -164,11 +170,79 @@ dataSources:
       eventHandlers:
         - event: HypervisorCreated(address,address,uint24,address,uint256)
           handler: handleHypervisorCreated
-  {{/uniswapV3}}
+  {{/uniswapV3HypervisorFactory}}
+  {{#uniswapV3HypervisorOrphan}}
+  - name: {{name}}
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      address: "{{address}}"
+      abi: UniswapV3Hypervisor
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/hypervisor.ts
+      entities:
+        - Visor
+        - UniswapV3Hypervisor
+        - UniswapV3Deposit
+        - UniswapV3Rebalance
+        - UniswapV3Withdraw
+        - UniswapV3HypervisorShare
+      abis:
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleWithdraw
+        - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebalance
+      callHandlers:
+        - function: setDepositMax(uint256,uint256)
+          handler: handleSetDepositMax
+        - function: setMaxTotalSupply(uint256)
+          handler: handleSetMaxTotalSupply
+  {{/uniswapV3HypervisorOrphan}}
+  {{#feeDistributor}}
+  - kind: ethereum/contract
+    name: {{name}}
+    network: {{network}}
+    source:
+      address: "{{address}}"
+      abi: FeeDistributor
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/feeDistributor.ts
+      entities:
+        - Visor
+        - EthToken
+        - EthDistribution
+        - EthDayData
+      abis:
+        - name: FeeDistributor
+          file: ./abis/FeeDistributor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Multisended(uint256,address)
+          handler: handleMultisended
+      callHandlers:
+        - function: multisendEther(address[],uint256[])
+          handler: handleMultisendEther
+  {{/feeDistributor}}
 templates:
   - name: UniswapV3Hypervisor
     kind: ethereum/contract
-    network: mainnet
+    network: {{network}}
     source:
       abi: UniswapV3Hypervisor
     mapping:
@@ -202,7 +276,7 @@ templates:
           handler: handleSetMaxTotalSupply
   - name: UniswapV3Pool
     kind: ethereum/contract
-    network: mainnet
+    network: {{network}}
     source:
       abi: UniswapV3Pool
     mapping:

@@ -1,4 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import { 
 	Deposit as DepositEvent,
@@ -13,8 +13,72 @@ import {
 	UniswapV3Withdraw,
 	UniswapV3HypervisorShare
 } from "../../../generated/schema"
-import { ZERO_BI, ONE_BI, ZERO_BD } from "../constants"
+import { 
+    UniswapV3Pool as PoolTemplate
+} from "../../../generated/templates"
+import { getOrCreatePool } from "../uniswapV3/pool"
+import { createConversion } from "../tokens"
+import { ADDRESS_ZERO, ZERO_BI, ONE_BI, ZERO_BD } from "../constants"
 
+
+export function getOrCreateHypervisor(hypervisorAddress: Address, timestamp: BigInt): UniswapV3Hypervisor {
+	let hypervisorId = hypervisorAddress.toHex()
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
+
+	if (hypervisor == null) {
+		let hypervisorContract = HypervisorContract.bind(hypervisorAddress)
+	    
+	    // Creating pool also creates tokens
+	    let poolAddress = hypervisorContract.pool()
+	    let pool = getOrCreatePool(poolAddress)
+
+	    // Update hypervisors linked to pool
+	    let hypervisors = pool.hypervisors
+	    hypervisors.push(hypervisorId)
+	    pool.hypervisors = hypervisors
+	    pool.save()
+
+	    hypervisor = new UniswapV3Hypervisor(hypervisorId)
+	    hypervisor.pool = poolAddress.toHex()
+	    hypervisor.factory = ADDRESS_ZERO
+	    hypervisor.owner = hypervisorContract.owner()
+	    hypervisor.symbol = hypervisorContract.symbol()
+	    hypervisor.created = timestamp.toI32()
+	    hypervisor.tick = hypervisorContract.currentTick()
+	    hypervisor.baseLower = hypervisorContract.baseLower()
+	    hypervisor.baseUpper = hypervisorContract.baseUpper()
+	    hypervisor.limitLower = hypervisorContract.limitLower()
+	    hypervisor.limitUpper = hypervisorContract.limitUpper()
+	    hypervisor.deposit0Max = hypervisorContract.deposit0Max()
+	    hypervisor.deposit1Max = hypervisorContract.deposit1Max()
+	    hypervisor.totalSupply = hypervisorContract.totalSupply()
+	    hypervisor.maxTotalSupply = hypervisorContract.maxTotalSupply()
+	    hypervisor.grossFeesClaimed0 = ZERO_BI
+	    hypervisor.grossFeesClaimed1 = ZERO_BI
+	    hypervisor.grossFeesClaimedUSD = ZERO_BD
+	    hypervisor.protocolFeesCollected0 = ZERO_BI
+	    hypervisor.protocolFeesCollected1 = ZERO_BI
+	    hypervisor.protocolFeesCollectedUSD = ZERO_BD
+	    hypervisor.feesReinvested0 = ZERO_BI
+	    hypervisor.feesReinvested1 = ZERO_BI
+	    hypervisor.feesReinvestedUSD = ZERO_BD
+	    hypervisor.tvl0 = ZERO_BI
+	    hypervisor.tvl1 = ZERO_BI
+	    hypervisor.tvlUSD = ZERO_BD
+	    hypervisor.pricePerShare = ZERO_BD
+	    hypervisor.visorCount = ZERO_BI
+	    hypervisor.conversion = hypervisorId
+	    hypervisor.lastUpdated = timestamp
+	    hypervisor.save()
+
+	    // Create Conversion entity to track path to USD calculations
+	    createConversion(hypervisorId)
+
+	    PoolTemplate.create(poolAddress)
+	}
+
+    return hypervisor as UniswapV3Hypervisor
+}
 
 export function createDeposit(event: DepositEvent): UniswapV3Deposit {
 
