@@ -5,10 +5,10 @@
         "address": "0xF938424F7210f31dF2Aee3011291b658f872e91e",
         "startBlock": 12025310
     }],
-    "RewardHypervisor": [{
-        "name": "RewardHypervisor",
-        "address": "0x57256381d8010dcf50daaf3421620ba9798ba7b5",
-        "startBlock": 12926408
+    "vVisrToken": [{
+        "name": "vVisrToken",
+        "address": "0x3a84ad5d16adbe566baa6b3dafe39db3d5e261e5",
+        "startBlock": 13148639
     }],
     "VisorFactory": [{
         "name": "VisorFactory",

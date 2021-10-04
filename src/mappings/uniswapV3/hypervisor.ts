@@ -30,14 +30,14 @@ import { ONE_BI, ZERO_BI, ZERO_BD } from "../../utils/constants"
 
 export function handleDeposit(event: DepositEvent): void {
 
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let hypervisorId = event.address.toHex()
-	
+
 	// Reset aggregates until new amounts are calculated
 	resetAggregates(hypervisorId)
 
 	// Create deposit event
 	let deposit = createDeposit(event)
-	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
@@ -77,6 +77,7 @@ export function handleDeposit(event: DepositEvent): void {
 
 export function handleRebalance(event: RebalanceEvent): void {
 
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let hypervisorId = event.address.toHex()
 
 	// Reset aggregates until new amounts are calculated
@@ -84,7 +85,6 @@ export function handleRebalance(event: RebalanceEvent): void {
 	
 	// Create rebalance
 	let rebalance = createRebalance(event)
-	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)
 
@@ -148,6 +148,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 
 export function handleWithdraw(event: WithdrawEvent): void {
 
+	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let hypervisorId = event.address.toHex()
 
 	// Reset factory aggregates until new values are calculated
@@ -155,7 +156,6 @@ export function handleWithdraw(event: WithdrawEvent): void {
 
 	// Create Withdraw event
 	let withdraw = createWithdraw(event)
-	let hypervisor = getOrCreateHypervisor(event.address, event.block.timestamp)
 	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
 	let pool = UniswapV3Pool.load(hypervisor.pool)	
 
