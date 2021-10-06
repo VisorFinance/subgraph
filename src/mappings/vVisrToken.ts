@@ -21,7 +21,7 @@ export function handleTransfer(event: TransferEvent): void {
 		vVisr.save()
 	} else if (event.params.to == Address.fromString(ADDRESS_ZERO)) {
 		// Burn shares
-		decreaseRewardHypervisorShares(event.params.from.toHex(), ZERO_BI, shares)
+		decreaseRewardHypervisorShares(event.params.from.toHex(), shares)
 		vVisr.totalSupply -= shares
 		vVisr.save()
 	}
