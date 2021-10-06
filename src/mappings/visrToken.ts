@@ -3,9 +3,9 @@ import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generat
 import { VisrToken,	Visor, StakedToken } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
-import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, VVISR_ADDRESS } from '../utils/constants'
+import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, REWARD_HYPERVISOR_ADDRESS } from '../utils/constants'
 import { getVisrRateInUSDC } from '../utils/pricing'
-import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare, decreaseRewardHypervisorShares } from '../utils/rewardHypervisor'
+import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from '../utils/rewardHypervisor'
 import { recordVisrDistribution, unstakeVisrFromVisor } from '../utils/visrToken'
 
 let DISTRIBUTORS: Array<Address> = [
@@ -16,7 +16,7 @@ let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
-let REWARD_HYPERVISOR = Address.fromString(VVISR_ADDRESS)
+let REWARD_HYPERVISOR = Address.fromString(REWARD_HYPERVISOR_ADDRESS)
 
 export function handleTransfer(event: TransferEvent): void {
 
@@ -66,9 +66,6 @@ export function handleTransfer(event: TransferEvent): void {
 			// User deposit into reward hypervisor
 			// Update reward hypervisor total
 			vVisr.totalVisr += visrAmount
-			// Update RewardHypervisorShare
-			let vVisrShare = getOrCreateRewardHypervisorShare(fromString)
-			vVisrShare.visrDeposited += visrAmount
 			// Update visor entity
 			if (visorFrom != null) {
 				// Skip if address is not a visor vault
@@ -78,14 +75,12 @@ export function handleTransfer(event: TransferEvent): void {
 			}
 			// Update visr entity
 			visr.totalStaked += visrAmount
-			vVisrShare.save()
 		}
 		vVisr.save()
 	} else if (event.params.from == REWARD_HYPERVISOR) {
 		// User withdraw from reward hypervisor
 		// Update reward hypervisor total
 		vVisr.totalVisr -= visrAmount
-		decreaseRewardHypervisorShares(toString, visrAmount, ZERO_BI)
 		// update visor entity
 		if (visorTo != null) {
 			// Skip if address is not a visor vault

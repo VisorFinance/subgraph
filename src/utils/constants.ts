@@ -1,7 +1,7 @@
 import { Address, BigInt, BigDecimal, TypedMap } from '@graphprotocol/graph-ts'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
-export const VVISR_ADDRESS = "0xc9f27a50f82571c1c8423a42970613b8dbda14ef"
+export const REWARD_HYPERVISOR_ADDRESS = "0xc9f27a50f82571c1c8423a42970613b8dbda14ef"
 
 export let ZERO_BI = BigInt.fromI32(0)
 export let ONE_BI = BigInt.fromI32(1)

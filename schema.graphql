@@ -45,7 +45,6 @@ type RewardHypervisorShare @entity {
   visor: Visor!
   rewardHypervisor: RewardHypervisor!
   shares: BigInt!
-  visrDeposited: BigInt!
 }
 
 type VisrTokenDayData @entity {
@@ -97,6 +96,7 @@ type Visor @entity {
     vVisrShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
+    rewardHypervisorShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
     hypervisorCount: BigInt!
     hypervisorShares: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
     visrDistributions: [UniswapV3HypervisorShare!]! @derivedFrom(field: "visor")
