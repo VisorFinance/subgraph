@@ -89,7 +89,6 @@ type Visor @entity {
     owner: User!
     operator: User
     tokenId: BigInt
-    visrStaked: BigInt!
     visrDeposited: BigInt!
     visrEarnedRealized: BigInt!
     ethEarned: BigInt!

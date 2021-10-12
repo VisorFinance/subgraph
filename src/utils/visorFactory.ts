@@ -16,7 +16,6 @@ export function getOrCreateVisor(addressString: string): Visor {
 	if (visor == null) {
 		visor = new Visor(addressString)
 		visor.tokenId = ZERO_BI
-		visor.visrStaked = ZERO_BI
 		visor.visrDeposited = ZERO_BI
 		visor.visrEarnedRealized = ZERO_BI
 		visor.ethEarned = ZERO_BI

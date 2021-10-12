@@ -1,8 +1,25 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { getVisrRateInUSDC } from './pricing'
-import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
-import { Visor, VisrDistribution } from '../../generated/schema'
+import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
+import { Visor, VisrDistribution, VisrToken } from '../../generated/schema'
+import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from './rewardHypervisor'
+import { ZERO_BI, ZERO_BD } from './constants'
 
+export function getOrCreateVisrToken(visrAddressString: string): VisrToken {
+	let visr = VisrToken.load(visrAddressString)
+	if (visr === null) {
+		visr = new VisrToken(visrAddressString)
+		let visrContract = ERC20Contract.bind(Address.fromString(visrAddressString))
+		visr.name = visrContract.name()
+		visr.decimals = visrContract.decimals()
+		visr.totalSupply = ZERO_BI
+		visr.totalStaked = ZERO_BI
+		visr.totalDistributed = ZERO_BI
+		visr.totalDistributedUSD = ZERO_BD
+		visr.save()
+	}
+	return visr as VisrToken
+}
 
 export function recordVisrDistribution(event: TransferEvent): void {
 	let id = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
@@ -19,8 +36,11 @@ export function recordVisrDistribution(event: TransferEvent): void {
 
 export function unstakeVisrFromVisor(visorAddress: string, amount: BigInt): void {
 
+	let rHypervisor = getOrCreateRewardHypervisor()
+	let rHypervisorShares = getOrCreateRewardHypervisorShare(visorAddress)
 	let visor = Visor.load(visorAddress)
-	let visrEarned = visor.visrStaked - visor.visrDeposited
+	let visrStaked = rHypervisorShares.shares * rHypervisor.totalVisr / rHypervisor.totalSupply
+	let visrEarned = visrStaked - visor.visrDeposited
 	if (amount > visrEarned) {
 		visor.visrDeposited -= amount - visrEarned
 		// If unstake amount is larger than earned, then all earned visr is realized
@@ -29,6 +49,5 @@ export function unstakeVisrFromVisor(visorAddress: string, amount: BigInt): void
 		// If unstake amount <= earned, then only unstaked amount is realized
 		visor.visrEarnedRealized += amount
 	}
-	visor.visrStaked -= amount
 	visor.save()
 }
