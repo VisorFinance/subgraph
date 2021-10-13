@@ -8,6 +8,7 @@ import { getVisrRateInUSDC } from '../utils/pricing'
 import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from '../utils/rewardHypervisor'
 import { getOrCreateVisrToken, recordVisrDistribution, unstakeVisrFromVisor } from '../utils/visrToken'
 
+
 let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
 	Address.fromString("0x354ad875a68e5d4ac69cb56df72137e638dcf4a0"),  // Distributor 2
