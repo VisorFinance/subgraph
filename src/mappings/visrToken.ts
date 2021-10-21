@@ -1,12 +1,12 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
-import { VisrToken,	Visor, StakedToken, RewardHypervisor } from "../../generated/schema"
+import { Visor, StakedToken, RewardHypervisor } from "../../generated/schema"
 import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, REWARD_HYPERVISOR_ADDRESS } from '../utils/constants'
 import { getVisrRateInUSDC } from '../utils/pricing'
 import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from '../utils/rewardHypervisor'
-import { getOrCreateVisrToken, recordVisrDistribution, unstakeVisrFromVisor } from '../utils/visrToken'
+import { getOrCreateVisrToken, unstakeVisrFromVisor } from '../utils/visrToken'
 
 
 let DISTRIBUTORS: Array<Address> = [
@@ -20,14 +20,10 @@ let DISTRIBUTORS: Array<Address> = [
 let REWARD_HYPERVISOR = Address.fromString(REWARD_HYPERVISOR_ADDRESS)
 
 export function handleTransfer(event: TransferEvent): void {
-
-	let visrAddress = event.address
-	let visrAddressString = visrAddress.toHexString()
-
 	let visrRate = ZERO_BD
 	let visrAmount = event.params.value
 
-	let visr = getOrCreateVisrToken(visrAddressString)
+	let visr = getOrCreateVisrToken()
 	if (event.params.from == Address.fromString(ADDRESS_ZERO)) {
 		// Mint event
 		visr.totalSupply += visrAmount
@@ -76,14 +72,7 @@ export function handleTransfer(event: TransferEvent): void {
 
 	// Update daily distributed data
 	if (distributed > ZERO_BI) {
-		let visrTokenDayDataUTC = updateVisrTokenDayData(event, ZERO_BI)
-		visrTokenDayDataUTC.distributed += distributed
-		visrTokenDayDataUTC.distributedUSD += distributed.toBigDecimal() * visrRate
-		visrTokenDayDataUTC.save()
-
-		let visrTokenDayDataEST = updateVisrTokenDayData(event, BigInt.fromI32(-5))
-		visrTokenDayDataEST.distributed += distributed
-		visrTokenDayDataEST.distributedUSD += distributed.toBigDecimal() * visrRate
-		visrTokenDayDataEST.save()
+		let visrTokenDayDataUTC = updateVisrTokenDayData(distributed, event.block.timestamp, ZERO_BI)
+		let visrTokenDayDataEST = updateVisrTokenDayData(distributed, event.block.timestamp, BigInt.fromI32(-5))
 	}
 }

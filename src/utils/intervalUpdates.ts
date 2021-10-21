@@ -1,11 +1,12 @@
 import { ethereum, BigInt } from '@graphprotocol/graph-ts'
 import {
     EthDayData,
-    VisrToken,
     VisrTokenDayData,
     UniswapV3HypervisorDayData,
     UniswapV3Hypervisor 
 } from '../../generated/schema'
+import { getOrCreateVisrToken } from './visrToken'
+import { getVisrRateInUSDC } from './pricing'
 import { ZERO_BI, ZERO_BD } from './constants'
 
 let SECONDS_IN_HOUR = BigInt.fromI32(60 * 60)
@@ -33,8 +34,7 @@ export function getEthDayData(event: ethereum.Event, utcDiffHours: BigInt): EthD
     return ethDayData as EthDayData
 }
 
-export function updateVisrTokenDayData(event: ethereum.Event, utcDiffHours: BigInt): VisrTokenDayData {
-    let timestamp = event.block.timestamp
+export function updateVisrTokenDayData(distributed: BigInt, timestamp: BigInt, utcDiffHours: BigInt): VisrTokenDayData {
     let utcDiffSeconds = utcDiffHours * SECONDS_IN_HOUR
     let timezone = (utcDiffHours == ZERO_BI) ? 'UTC' : "UTC" + utcDiffHours.toString() 
 
@@ -51,8 +51,12 @@ export function updateVisrTokenDayData(event: ethereum.Event, utcDiffHours: BigI
         visrDayData.distributedUSD = ZERO_BD
     }
 
-    let visr = VisrToken.load(event.address.toHexString())
+    let visrRate = getVisrRateInUSDC()
+    let visr = getOrCreateVisrToken()
+
     visrDayData.totalStaked = visr.totalStaked
+    visrDayData.distributed += distributed
+    visrDayData.distributedUSD += distributed.toBigDecimal() * visrRate
     visrDayData.save()
 
     return visrDayData as VisrTokenDayData

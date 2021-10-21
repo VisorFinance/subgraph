@@ -1,4 +1,7 @@
 specVersion: 0.0.2
+# graft:
+#   base: Qma97D15Kamogvk51Z1oXuyx1G8MtV7rQaLN7mvt2SfYiL
+#   block: 13404912
 schema:
   file: ./schema.graphql
 dataSources:
@@ -442,6 +445,29 @@ dataSources:
       callHandlers:
         - function: multisendEther(address[],uint256[])
           handler: handleMultisendEther
+  - kind: ethereum/contract
+    name: SwapContract
+    network: mainnet
+    source:
+      address: "0x0B7D3aE92b6F4a440bacc4B9826ad2b4C35a12C8"
+      abi: SwapContract
+      startBlock: 13404912
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/swap.ts
+      entities:
+        - VisrToken
+        - VisrTokenDayData
+      abis:
+        - name: SwapContract
+          file: ./abis/SwapContract.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: SwapVISR(address,address,uint256)
+          handler: handleSwapVISR
 templates:
   - name: UniswapV3Hypervisor
     kind: ethereum/contract

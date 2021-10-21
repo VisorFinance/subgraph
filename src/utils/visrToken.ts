@@ -1,15 +1,18 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt, dataSource } from '@graphprotocol/graph-ts'
 import { getVisrRateInUSDC } from './pricing'
 import { ERC20 as ERC20Contract, Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { Visor, VisrDistribution, VisrToken } from '../../generated/schema'
 import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from './rewardHypervisor'
-import { ZERO_BI, ZERO_BD } from './constants'
+import { ZERO_BI, ZERO_BD, constantAddresses } from './constants'
 
-export function getOrCreateVisrToken(visrAddressString: string): VisrToken {
-	let visr = VisrToken.load(visrAddressString)
+export function getOrCreateVisrToken(): VisrToken {
+	let addressLookup = constantAddresses.network(dataSource.network())
+    let visrAddress = addressLookup.get("VISR") as string
+
+	let visr = VisrToken.load(visrAddress)
 	if (visr === null) {
-		visr = new VisrToken(visrAddressString)
-		let visrContract = ERC20Contract.bind(Address.fromString(visrAddressString))
+		visr = new VisrToken(visrAddress)
+		let visrContract = ERC20Contract.bind(Address.fromString(visrAddress))
 		visr.name = visrContract.name()
 		visr.decimals = visrContract.decimals()
 		visr.totalSupply = ZERO_BI

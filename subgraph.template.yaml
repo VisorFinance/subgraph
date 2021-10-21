@@ -246,6 +246,31 @@ dataSources:
         - function: multisendEther(address[],uint256[])
           handler: handleMultisendEther
   {{/feeDistributor}}
+  {{#swapContract}}
+  - kind: ethereum/contract
+    name: {{name}}
+    network: {{network}}
+    source:
+      address: "{{address}}"
+      abi: SwapContract
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/swap.ts
+      entities:
+        - VisrToken
+        - VisrTokenDayData
+      abis:
+        - name: SwapContract
+          file: ./abis/SwapContract.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: SwapVISR(address,address,uint256)
+          handler: handleSwapVISR
+  {{/swapContract}}
 templates:
   - name: UniswapV3Hypervisor
     kind: ethereum/contract
