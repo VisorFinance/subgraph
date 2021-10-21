@@ -1,5 +1,5 @@
 import { BigInt } from '@graphprotocol/graph-ts'
-import { MultisendEtherCall, Multisended } from "../../generated/feeDistributor/feeDistributor"
+import { MultisendEtherCall, Multisended } from "../../generated/FeeDistributor/FeeDistributor"
 import { EthToken, EthDistribution } from '../../generated/schema'
 import { getEthRateInUSDC } from "../utils/pricing"
 import { getEthDayData } from "../utils/intervalUpdates"

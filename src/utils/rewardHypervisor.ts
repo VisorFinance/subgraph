@@ -1,5 +1,6 @@
 import { dataSource, BigInt, store } from '@graphprotocol/graph-ts'
-import { ZERO_BI, REWARD_HYPERVISOR_ADDRESS, constantAddresses } from './constants'
+import { getOrCreateVisrToken } from './visrToken'
+import { ZERO_BI, REWARD_HYPERVISOR_ADDRESS } from './constants'
 import { VisrToken, RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
 
 
@@ -13,9 +14,7 @@ export function getOrCreateRewardHypervisor(): RewardHypervisor {
 		rhypervisor.save()
 
 		// Reset total staked VISR at this point. To track VISR staked in rewards hypervisor only
-		let addressLookup = constantAddresses.network(dataSource.network())
-    	let visrAddress = addressLookup.get("VISR") as string
-    	let visr = VisrToken.load(visrAddress)
+    	let visr = getOrCreateVisrToken()
     	visr.totalStaked = ZERO_BI
     	visr.save()
 	}
