@@ -5,8 +5,8 @@ import { ADDRESS_ZERO, ONE_BD, ZERO_BD, constantAddresses } from "./constants"
 import { UniswapV3HypervisorConversion } from "../../generated/schema"
 
 
-let USDC_DECIMAL_FACTOR = 10 ** 6
-let Q192 = 2 ** 192
+const USDC_DECIMAL_FACTOR = 10 ** 6
+const Q192 = 2 ** 192
 export function getExchangeRate(poolAddress: Address, baseTokenIndex: i32): BigDecimal {
     // Get ratios to convert token0 to token1 and vice versa
     let contract = PoolContract.bind(poolAddress)

@@ -18,7 +18,7 @@ export function handleMultisendEther(call: MultisendEtherCall): void {
 
 export function handleMultisended(event: Multisended): void {
 	log.warning("{}", [event.params.tokenAddress.toHex()])
-	let ethAddress = Address.fromString("0x000000000000000000000000000000000000beef")
+	const ethAddress = Address.fromString("0x000000000000000000000000000000000000beef")
 	if (event.params.tokenAddress == ethAddress) {
 		updateEthDistributionTotals(event)
 	}

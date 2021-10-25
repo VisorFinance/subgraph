@@ -3,13 +3,13 @@ import { SwapVISR } from '../../generated/SwapContract/SwapContract'
 import { getVisrRateInUSDC } from '../utils/pricing'
 import { getOrCreateVisrToken } from '../utils/visrToken'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
-import { REWARD_HYPERVISOR_ADDRESS, constantAddresses, ZERO_BI } from '../utils/constants'
+import { REWARD_HYPERVISOR_ADDRESS, ZERO_BI } from '../utils/constants'
 
 
 export function handleSwapVISR(event: SwapVISR): void {
 	if (event.params.recipient.toHex() == REWARD_HYPERVISOR_ADDRESS) {
 		let visr = getOrCreateVisrToken()
-		let visrRate = getVisrRateInUSDC()
+		const visrRate = getVisrRateInUSDC()
 
 		let distributed = event.params.amountOut
 		visr.totalDistributed += distributed

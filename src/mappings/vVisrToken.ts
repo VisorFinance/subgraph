@@ -1,5 +1,5 @@
 import { Address, } from '@graphprotocol/graph-ts'
-import { ADDRESS_ZERO, ZERO_BI } from '../utils/constants'
+import { ADDRESS_ZERO } from '../utils/constants'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
 import { 
 	getOrCreateRewardHypervisor,

@@ -14,9 +14,9 @@ export function getOrCreateRewardHypervisor(): RewardHypervisor {
 		rhypervisor.save()
 
 		// Reset total staked VISR at this point. To track VISR staked in rewards hypervisor only
-    	let visr = getOrCreateVisrToken()
-    	visr.totalStaked = ZERO_BI
-    	visr.save()
+		let visr = getOrCreateVisrToken()
+		visr.totalStaked = ZERO_BI
+		visr.save()
 	}
 
 	return rhypervisor as RewardHypervisor
@@ -24,7 +24,7 @@ export function getOrCreateRewardHypervisor(): RewardHypervisor {
 
 export function getOrCreateRewardHypervisorShare(visorAddress: string): RewardHypervisorShare {
 	
-	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
+	const id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
 	if (vVisrShare == null) {
@@ -39,7 +39,7 @@ export function getOrCreateRewardHypervisorShare(visorAddress: string): RewardHy
 
 export function decreaseRewardHypervisorShares(visorAddress: string, shares: BigInt): void {
 
-	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
+	const id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
 	vVisrShare.shares -= shares

@@ -1,20 +1,11 @@
 import { Address } from '@graphprotocol/graph-ts'
 import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3HypervisorFactory"
-import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Hypervisor"
-import { 
-    UniswapV3Pool,
-    UniswapV3Hypervisor,
-    UniswapV3HypervisorFactory
-} from "../../../generated/schema"
-import { 
-    UniswapV3Hypervisor as HypervisorTemplate
-} from "../../../generated/templates"
+import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"
 import { getOrCreateHypervisor } from "../../utils/uniswapV3/hypervisor"
 import { getOrCreateFactory } from "../../utils/uniswapV3/hypervisorFactory"
-import { ZERO_BI, ONE_BI, ZERO_BD } from "../../utils/constants"
 
 //Hypervisors that were created with invalid parameters and should not be indexed
-let INVALID_HYPERVISORS: Array<Address> = [
+const INVALID_HYPERVISORS: Array<Address> = [
     Address.fromString('0xce721b5dc9624548188b5451bb95989a7927080a'),  // CRV
     Address.fromString('0x0e9e16f6291ba2aaaf41ccffdf19d32ab3691d15'),  // MATIC
     Address.fromString('0x95b801f9bf7c49b383e36924c2ce176be3027d66'),  // Incorrect TCR
@@ -25,7 +16,7 @@ export function handleHypervisorCreated(event: HypervisorCreated): void {
 
     if (INVALID_HYPERVISORS.includes(event.params.hypervisor)) return;
 
-    let factoryAddressString = event.address.toHexString()
+    const factoryAddressString = event.address.toHexString()
 
     let factory = getOrCreateFactory(factoryAddressString)
     factory.save()

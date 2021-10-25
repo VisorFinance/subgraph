@@ -1,7 +1,6 @@
 import { store } from '@graphprotocol/graph-ts'
 import { visorAddressFromTokenId } from "../utils/visor"
 import { 
-	VisorFactory,
 	Approval,
 	ApprovalForAll,
 	InstanceAdded,
@@ -11,9 +10,8 @@ import {
 	TemplateAdded,
 	Transfer
 } from "../../generated/VisorFactory/VisorFactory"
-import { Factory, User,	OwnerOperator, Visor, VisorTemplate } from "../../generated/schema"
+import { Factory, OwnerOperator, VisorTemplate } from "../../generated/schema"
 import { getOrCreateUser, getOrCreateVisor } from "../utils/visorFactory"
-import { ADDRESS_ZERO, ZERO_BI, ONE_BI } from "../utils/constants"
 
 export function handleApproval(event: Approval): void {
 	let visorId = visorAddressFromTokenId(event.params.tokenId)
