@@ -9,7 +9,7 @@ import { REWARD_HYPERVISOR_ADDRESS, ZERO_BI } from '../utils/constants'
 export function handleSwapVISR(event: SwapVISR): void {
 	if (event.params.recipient.toHex() == REWARD_HYPERVISOR_ADDRESS) {
 		let visr = getOrCreateVisrToken()
-		const visrRate = getVisrRateInUSDC()
+		let visrRate = getVisrRateInUSDC()
 
 		let distributed = event.params.amountOut
 		visr.totalDistributed += distributed

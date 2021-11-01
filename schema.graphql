@@ -154,6 +154,7 @@ type UniswapV3Pool @entity {
   token1: Token!
   # Fee tier: 50, 3000, 10000
   fee: Int!
+  sqrtPriceX96: BigInt!
   hypervisors: [String!]!
   lastSwapTime: BigInt!
 }

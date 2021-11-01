@@ -44,7 +44,7 @@ export class BaseTokenDefinition {
         // const DAI_USDC = ""
         const USDC_USDT = "0x13398e27a21be1218b6900cbedf677571df42a48"
 
-        const lookup = new TypedMap<string, BasePool>()
+        let lookup = new TypedMap<string, BasePool>()
         lookup.set(USDC, { pool: ADDRESS_ZERO, usdTokenIdx: -1, priority: 4 });
         lookup.set(USDT, { pool: USDC_USDT, usdTokenIdx: 1, priority: 3 });
         lookup.set(WETH, { pool: USDC_WETH, usdTokenIdx: 1, priority: 1 });
@@ -54,7 +54,7 @@ export class BaseTokenDefinition {
     }
 
     static nonBase(): BasePool {
-        const lookup: BasePool = {
+        let lookup: BasePool = {
             pool: ADDRESS_ZERO,
             usdTokenIdx: -1,
             priority: -1

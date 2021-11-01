@@ -1,17 +1,16 @@
 import { Address, BigDecimal, dataSource } from '@graphprotocol/graph-ts'
-import { UniswapV3Pool as PoolContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Pool"
-import { getOrCreateToken, isUSDC, isZero } from "./tokens"
-import { ADDRESS_ZERO, ONE_BD, ZERO_BD, constantAddresses } from "./constants"
-import { UniswapV3HypervisorConversion } from "../../generated/schema"
+import { isUSDC, isZero } from "./tokens"
+import { ONE_BD, ZERO_BD, constantAddresses } from "./constants"
+import { UniswapV3Pool, UniswapV3HypervisorConversion } from "../../generated/schema"
 
 
-const USDC_DECIMAL_FACTOR = 10 ** 6
-const Q192 = 2 ** 192
+let USDC_DECIMAL_FACTOR = 10 ** 6
+let Q192 = 2 ** 192
 export function getExchangeRate(poolAddress: Address, baseTokenIndex: i32): BigDecimal {
     // Get ratios to convert token0 to token1 and vice versa
-    let contract = PoolContract.bind(poolAddress)
-    let slot0 = contract.slot0()
-    let sqrtPriceX96 = slot0.value0
+    let pool = UniswapV3Pool.load(poolAddress.toHex())
+    
+    let sqrtPriceX96 = pool.sqrtPriceX96
     let num = sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()
     let denom = BigDecimal.fromString(Q192.toString())
     

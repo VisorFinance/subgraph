@@ -19,14 +19,9 @@
     ],
     "uniswapV3HypervisorOrphan": [
         {
-            "name": "WethUsdt",
-            "address": "0xb70A67cb2cE5D49768925D2De568267e79AA106B",
-            "startBlock": 854958
-        },
-        {
-            "name": "WethUsdc",
-            "address": "0xe2A08B8Dfa925D8e05F07eeFCEdc6728a20234F8",
-            "startBlock": 855145
+            "name": "vETH-USDT",
+            "address": "0x0e0f25eefe70e6f7ceb9a943be9191c312d23f6b",
+            "startBlock": 1923369
         }
     ]
 }

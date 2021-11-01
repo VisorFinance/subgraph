@@ -16,7 +16,7 @@ export function getOrCreateVisrToken(): VisrToken {
   if (visr === null) {
     visr = new VisrToken(visrAddress);
     visr.name = "VISOR";
-    visr.decimals = BigInt.fromI32(18);
+    visr.decimals = BigInt.fromI32(18) as i32;
     visr.totalSupply = ZERO_BI;
     visr.totalStaked = ZERO_BI;
     visr.totalDistributed = ZERO_BI;

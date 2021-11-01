@@ -8,7 +8,7 @@ import { getOrCreateRewardHypervisor } from '../utils/rewardHypervisor'
 import { getOrCreateVisrToken, unstakeVisrFromVisor } from '../utils/visrToken'
 
 
-const DISTRIBUTORS: Array<Address> = [
+let DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xe50df7cd9d64690a2683c07400ef9ed451c2ab31"),  // Distributor 1
 	Address.fromString("0x354ad875a68e5d4ac69cb56df72137e638dcf4a0"),  // Distributor 2
 	Address.fromString("0x3e738bef54e64be0c99759e0c77d9c72c5a8666e"),  // Distributor 3
@@ -16,7 +16,7 @@ const DISTRIBUTORS: Array<Address> = [
 	Address.fromString("0xa5025faba6e70b84f74e9b1113e5f7f4e7f4859f")   // Multisend App
 ]
 
-const REWARD_HYPERVISOR = Address.fromString(REWARD_HYPERVISOR_ADDRESS)
+let REWARD_HYPERVISOR = Address.fromString(REWARD_HYPERVISOR_ADDRESS)
 
 export function handleTransfer(event: TransferEvent): void {
 	let visrRate = ZERO_BD
@@ -31,8 +31,8 @@ export function handleTransfer(event: TransferEvent): void {
 	let distributed = ZERO_BI
 
 	// Check if either from or to address are VISOR vaults
-	const toString = event.params.to.toHexString()
-	const fromString = event.params.from.toHexString()
+	let toString = event.params.to.toHexString()
+	let fromString = event.params.from.toHexString()
 	let visorTo = Visor.load(toString)
 	let visorFrom = Visor.load(fromString)
 	let vVisr = getOrCreateRewardHypervisor()

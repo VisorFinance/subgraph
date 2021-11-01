@@ -12,6 +12,8 @@ import {
   UniswapV3Hypervisor,
   UniswapV3HypervisorConversion 
 } from "../../generated/schema"
+import { UniswapV3Pool as PoolTemplate } from "../../generated/templates";
+import { getOrCreatePool } from "./uniswapV3/pool";
 import { ZERO_BI, ZERO_BD, ADDRESS_ZERO, DEFAULT_DECIMAL, constantAddresses } from "./constants"
 
 
@@ -197,5 +199,13 @@ export function createConversion(address: string): void {
     conversion.priceBaseInUSD = ZERO_BD
     conversion.hypervisor = address
     conversion.save()
+
+    if (conversion.usdPool != ADDRESS_ZERO) {
+      let usdPoolAddress = Address.fromString(conversion.usdPool)
+      let pool = getOrCreatePool(usdPoolAddress)
+      pool.save()
+      PoolTemplate.create(usdPoolAddress)
+    }
+    
   }
 }

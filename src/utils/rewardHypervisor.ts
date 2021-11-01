@@ -1,7 +1,7 @@
-import { dataSource, BigInt, store } from '@graphprotocol/graph-ts'
+import { BigInt, store } from '@graphprotocol/graph-ts'
 import { getOrCreateVisrToken } from './visrToken'
 import { ZERO_BI, REWARD_HYPERVISOR_ADDRESS } from './constants'
-import { VisrToken, RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
+import { RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
 
 
 export function getOrCreateRewardHypervisor(): RewardHypervisor {
@@ -24,7 +24,7 @@ export function getOrCreateRewardHypervisor(): RewardHypervisor {
 
 export function getOrCreateRewardHypervisorShare(visorAddress: string): RewardHypervisorShare {
 	
-	const id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
+	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
 	if (vVisrShare == null) {
@@ -39,7 +39,7 @@ export function getOrCreateRewardHypervisorShare(visorAddress: string): RewardHy
 
 export function decreaseRewardHypervisorShares(visorAddress: string, shares: BigInt): void {
 
-	const id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
+	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
 	vVisrShare.shares -= shares

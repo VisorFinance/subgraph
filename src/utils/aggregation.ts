@@ -75,10 +75,3 @@ export function updateTvl(hypervisorAddress: Address): void {
 	hypervisor.lastUpdated = pool.lastSwapTime
 	hypervisor.save()
 }
-
-export function updateTick(hypervisorAddress: Address): void {
-	let contract = HypervisorContract.bind(hypervisorAddress)
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress.toHexString())
-	hypervisor.tick = contract.currentTick()
-	hypervisor.save()
-}
