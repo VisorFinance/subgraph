@@ -6,6 +6,7 @@ export function getOrCreateUser(addressString: string): User {
 	let user = User.load(addressString)
 	if (user == null) {
 		user = new User(addressString)
+		user.activeVisor = ADDRESS_ZERO
 	}
 	return user as User
 }

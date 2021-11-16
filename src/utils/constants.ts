@@ -1,4 +1,5 @@
-import { Address, BigInt, BigDecimal, TypedMap } from '@graphprotocol/graph-ts'
+/* eslint-disable prefer-const */
+import { BigInt, BigDecimal, TypedMap } from '@graphprotocol/graph-ts'
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 export const REWARD_HYPERVISOR_ADDRESS = "0xc9f27a50f82571c1c8423a42970613b8dbda14ef"
@@ -8,7 +9,7 @@ export let ONE_BI = BigInt.fromI32(1)
 export let ZERO_BD = BigDecimal.fromString('0')
 export let ONE_BD = BigDecimal.fromString('1')
 
-export let DEFAULT_DECIMAL = 18
+export const DEFAULT_DECIMAL = 18
 
 export class constantAddresses {
 

@@ -1,4 +1,4 @@
-import { Address } from '@graphprotocol/graph-ts'
+import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { UniswapV3Hypervisor as HypervisorContract } from "../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import { 
 	UniswapV3HypervisorFactory,
@@ -6,13 +6,14 @@ import {
 	UniswapV3Pool,
 	UniswapV3HypervisorConversion } from "../../generated/schema"
 import { getOrCreateFactory } from "../utils/uniswapV3/hypervisorFactory"
+import {getOrCreateHypervisor } from '../utils/uniswapV3/hypervisor'
 import { getExchangeRate, getBaseTokenRateInUSDC } from "../utils/pricing"
 import { ZERO_BI, ZERO_BD } from './constants'
 
 
 export function resetAggregates(hypervisorAddress: string): void {
 	// Resets aggregates in factory
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+	let hypervisor = getOrCreateHypervisor(Address.fromString(hypervisorAddress), BigInt.fromI32(0))
 	let factory = getOrCreateFactory(hypervisor.factory)
 	factory.grossFeesClaimedUSD -= hypervisor.grossFeesClaimedUSD
 	factory.protocolFeesCollectedUSD -= hypervisor.protocolFeesCollectedUSD
@@ -23,8 +24,8 @@ export function resetAggregates(hypervisorAddress: string): void {
 
 export function updateAggregates(hypervisorAddress: string): void {
 	// update aggregates in factory from hypervisor
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
-	let factory = UniswapV3HypervisorFactory.load(hypervisor.factory)
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress) as UniswapV3Hypervisor
+	let factory = UniswapV3HypervisorFactory.load(hypervisor.factory) as UniswapV3HypervisorFactory
 	factory.grossFeesClaimedUSD += hypervisor.grossFeesClaimedUSD
 	factory.protocolFeesCollectedUSD += hypervisor.protocolFeesCollectedUSD
 	factory.feesReinvestedUSD += hypervisor.feesReinvestedUSD
@@ -37,13 +38,13 @@ export function updateTvl(hypervisorAddress: Address): void {
 	let hypervisorId = hypervisorAddress.toHex()
 	let contract = HypervisorContract.bind(hypervisorAddress)
 	let totalAmounts = contract.getTotalAmounts()
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorId)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
+	let hypervisor = UniswapV3Hypervisor.load(hypervisorId) as UniswapV3Hypervisor
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 	
 	hypervisor.tvl0 = totalAmounts.value0
 	hypervisor.tvl1 = totalAmounts.value1
 
-	let pool = UniswapV3Pool.load(hypervisor.pool)
+	let pool = UniswapV3Pool.load(hypervisor.pool) as UniswapV3Pool
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
 
@@ -73,12 +74,5 @@ export function updateTvl(hypervisorAddress: Address): void {
 	}
 
 	hypervisor.lastUpdated = pool.lastSwapTime
-	hypervisor.save()
-}
-
-export function updateTick(hypervisorAddress: Address): void {
-	let contract = HypervisorContract.bind(hypervisorAddress)
-	let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress.toHexString())
-	hypervisor.tick = contract.currentTick()
 	hypervisor.save()
 }

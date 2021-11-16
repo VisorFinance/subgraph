@@ -1,17 +1,9 @@
+/* eslint-disable prefer-const */
 import { Address } from '@graphprotocol/graph-ts'
 import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3HypervisorFactory"
-import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Hypervisor"
-import { 
-    UniswapV3Pool,
-    UniswapV3Hypervisor,
-    UniswapV3HypervisorFactory
-} from "../../../generated/schema"
-import { 
-    UniswapV3Hypervisor as HypervisorTemplate
-} from "../../../generated/templates"
+import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"
 import { getOrCreateHypervisor } from "../../utils/uniswapV3/hypervisor"
 import { getOrCreateFactory } from "../../utils/uniswapV3/hypervisorFactory"
-import { ZERO_BI, ONE_BI, ZERO_BD } from "../../utils/constants"
 
 //Hypervisors that were created with invalid parameters and should not be indexed
 let INVALID_HYPERVISORS: Array<Address> = [

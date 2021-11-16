@@ -1,12 +1,12 @@
+/* eslint-disable prefer-const */
 import { Address, BigInt } from '@graphprotocol/graph-ts'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"
-import { Visor, StakedToken, RewardHypervisor } from "../../generated/schema"
-import { createStakedToken } from '../utils/tokens'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
 import { ADDRESS_ZERO, ZERO_BI, ZERO_BD, REWARD_HYPERVISOR_ADDRESS } from '../utils/constants'
 import { getVisrRateInUSDC } from '../utils/pricing'
-import { getOrCreateRewardHypervisor, getOrCreateRewardHypervisorShare } from '../utils/rewardHypervisor'
+import { getOrCreateRewardHypervisor } from '../utils/rewardHypervisor'
 import { getOrCreateVisrToken, unstakeVisrFromVisor } from '../utils/visrToken'
+import { getActiveVisor } from '../utils/visor'
 
 
 let DISTRIBUTORS: Array<Address> = [
@@ -32,10 +32,9 @@ export function handleTransfer(event: TransferEvent): void {
 	let distributed = ZERO_BI
 
 	// Check if either from or to address are VISOR vaults
-	let toString = event.params.to.toHexString()
-	let fromString = event.params.from.toHexString()
-	let visorTo = Visor.load(toString)
-	let visorFrom = Visor.load(fromString)
+	let visorTo = getActiveVisor(event.params.to.toHexString())
+	let visorFrom = getActiveVisor(event.params.from.toHexString())
+
 	let vVisr = getOrCreateRewardHypervisor()
 	
 	if (event.params.to == REWARD_HYPERVISOR) {
@@ -58,13 +57,18 @@ export function handleTransfer(event: TransferEvent): void {
 		}
 	} else if (event.params.from == REWARD_HYPERVISOR) {
 		// User withdraw from reward hypervisor
+		// update visor entity
+		if (!DISTRIBUTORS.includes(event.params.to) && visorTo != null) {
+			// Skip if address is not a visor vault
+			unstakeVisrFromVisor(visorTo.id.toString(), visrAmount, event.transaction.hash.toHex())
+		}
 		vVisr.totalVisr -= visrAmount
 		visr.totalStaked -= visrAmount
-		// update visor entity
-		if (visorTo != null) {
-			// Skip if address is not a visor vault
-			unstakeVisrFromVisor(toString, visrAmount)
-		}
+	} else if (DISTRIBUTORS.includes(event.params.from)  && visorTo != null) {
+		visrRate = getVisrRateInUSDC()
+		distributed += visrAmount
+		visr.totalDistributed += distributed
+		visr.totalDistributedUSD += distributed.toBigDecimal() * visrRate
 	}
 
 	vVisr.save()

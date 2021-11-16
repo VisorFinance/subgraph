@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { TypedMap } from "@graphprotocol/graph-ts"
 import { ADDRESS_ZERO } from "./constants"
  
@@ -6,7 +7,7 @@ class BasePool {
     pool: string;
     usdTokenIdx: i32;
     priority: i32;
-};
+}
 
 export class BaseTokenDefinition {
 

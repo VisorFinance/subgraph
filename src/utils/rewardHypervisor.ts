@@ -1,7 +1,7 @@
-import { dataSource, BigInt, store } from '@graphprotocol/graph-ts'
+import { BigInt } from '@graphprotocol/graph-ts'
 import { getOrCreateVisrToken } from './visrToken'
 import { ZERO_BI, REWARD_HYPERVISOR_ADDRESS } from './constants'
-import { VisrToken, RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
+import { RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
 
 
 export function getOrCreateRewardHypervisor(): RewardHypervisor {
@@ -14,9 +14,9 @@ export function getOrCreateRewardHypervisor(): RewardHypervisor {
 		rhypervisor.save()
 
 		// Reset total staked VISR at this point. To track VISR staked in rewards hypervisor only
-    	let visr = getOrCreateVisrToken()
-    	visr.totalStaked = ZERO_BI
-    	visr.save()
+		let visr = getOrCreateVisrToken()
+		visr.totalStaked = ZERO_BI
+		visr.save()
 	}
 
 	return rhypervisor as RewardHypervisor
@@ -42,10 +42,8 @@ export function decreaseRewardHypervisorShares(visorAddress: string, shares: Big
 	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
-	vVisrShare.shares -= shares
-	if (vVisrShare.shares == ZERO_BI) {
-		store.remove('RewardHypervisorShare', id)
-	} else {
+	if (vVisrShare != null) {
+		vVisrShare.shares -= shares
 		vVisrShare.save()
 	}
 }

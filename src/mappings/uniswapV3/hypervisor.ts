@@ -1,4 +1,5 @@
-import { Address, BigDecimal, store } from '@graphprotocol/graph-ts'
+/* eslint-disable prefer-const */
+import { Address, store } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
 	Withdraw as WithdrawEvent,
@@ -6,12 +7,8 @@ import {
 	SetDepositMaxCall,
 	SetMaxTotalSupplyCall
 } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
-import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor"
 import {
 	Visor,
-	UniswapV3Pool,
-	UniswapV3Hypervisor,
-	UniswapV3Rebalance,
 	UniswapV3HypervisorShare,
 	UniswapV3HypervisorConversion
 } from "../../../generated/schema"
@@ -25,7 +22,7 @@ import {
 import { updateAndGetUniswapV3HypervisorDayData } from "../../utils/intervalUpdates"
 import { getExchangeRate, getBaseTokenRateInUSDC } from "../../utils/pricing"
 import { resetAggregates, updateAggregates, updateTvl } from "../../utils/aggregation"
-import { ONE_BI, ZERO_BI, ZERO_BD } from "../../utils/constants"
+import { ONE_BI, ZERO_BD } from "../../utils/constants"
 
 
 export function handleDeposit(event: DepositEvent): void {
@@ -38,8 +35,7 @@ export function handleDeposit(event: DepositEvent): void {
 
 	// Create deposit event
 	let deposit = createDeposit(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
-	let pool = UniswapV3Pool.load(hypervisor.pool)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
@@ -85,8 +81,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 	
 	// Create rebalance
 	let rebalance = createRebalance(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
-	let pool = UniswapV3Pool.load(hypervisor.pool)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
@@ -156,8 +151,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 
 	// Create Withdraw event
 	let withdraw = createWithdraw(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
-	let pool = UniswapV3Pool.load(hypervisor.pool)	
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)

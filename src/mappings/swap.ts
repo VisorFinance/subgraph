@@ -1,9 +1,10 @@
+/* eslint-disable prefer-const */
 import { BigInt } from '@graphprotocol/graph-ts'
 import { SwapVISR } from '../../generated/SwapContract/SwapContract'
 import { getVisrRateInUSDC } from '../utils/pricing'
 import { getOrCreateVisrToken } from '../utils/visrToken'
 import { updateVisrTokenDayData } from '../utils/intervalUpdates'
-import { REWARD_HYPERVISOR_ADDRESS, constantAddresses, ZERO_BI } from '../utils/constants'
+import { REWARD_HYPERVISOR_ADDRESS, ZERO_BI } from '../utils/constants'
 
 
 export function handleSwapVISR(event: SwapVISR): void {

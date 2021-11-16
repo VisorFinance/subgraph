@@ -1,7 +1,4 @@
 specVersion: 0.0.2
-# graft:
-#   base: Qma97D15Kamogvk51Z1oXuyx1G8MtV7rQaLN7mvt2SfYiL
-#   block: 13404912
 schema:
   file: ./schema.graphql
 dataSources:
@@ -14,7 +11,7 @@ dataSources:
       startBlock: 12025310
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - VisrToken
@@ -41,7 +38,7 @@ dataSources:
       startBlock: 13148639
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - VisrToken
@@ -63,7 +60,7 @@ dataSources:
       startBlock: 12013637
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Factory
@@ -103,7 +100,7 @@ dataSources:
       startBlock: 12108493
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Hypervisor
@@ -143,7 +140,7 @@ dataSources:
       startBlock: 12108420
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Hypervisor
@@ -183,7 +180,7 @@ dataSources:
       startBlock: 12108439
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Hypervisor
@@ -223,7 +220,7 @@ dataSources:
       startBlock: 12108528
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
         - Hypervisor
@@ -263,7 +260,7 @@ dataSources:
       startBlock: 12767944
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisorFactory.ts
       entities:
@@ -294,7 +291,7 @@ dataSources:
       startBlock: 12615883
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisorFactory.ts
       entities:
@@ -325,7 +322,7 @@ dataSources:
       startBlock: 12590273
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisorFactory.ts
       entities:
@@ -356,7 +353,7 @@ dataSources:
       startBlock: 13328071
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisor.ts
       entities:
@@ -389,6 +386,56 @@ dataSources:
           handler: handleSetDepositMax
         - function: setMaxTotalSupply(uint256)
           handler: handleSetMaxTotalSupply
+  - name: WETH-USDC
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      address: "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8"
+      abi: UniswapV3Pool
+      startBlock: 12370624
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/pool.ts
+      entities:
+        - UniswapV3Hypervisor
+        - UniswapV3HypervisorDayData
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+          handler: handleSwap
+  - name: WETH-VISR
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      address: "0x9a9cf34c3892acdb61fb7ff17941d8d81d279c75"
+      abi: UniswapV3Pool
+      startBlock: 12376475
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/mappings/uniswapV3/pool.ts
+      entities:
+        - UniswapV3Hypervisor
+        - UniswapV3HypervisorDayData
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapV3Hypervisor
+          file: ./abis/UniswapV3Hypervisor.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+          handler: handleSwap
   - kind: ethereum/contract
     name: FeeDistributor
     network: mainnet
@@ -398,7 +445,7 @@ dataSources:
       startBlock: 13129847
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/feeDistributor.ts
       entities:
@@ -426,7 +473,7 @@ dataSources:
       startBlock: 13129208
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/feeDistributor.ts
       entities:
@@ -454,7 +501,7 @@ dataSources:
       startBlock: 13404912
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/swap.ts
       entities:
@@ -476,7 +523,7 @@ templates:
       abi: UniswapV3Hypervisor
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/hypervisor.ts
       entities:
@@ -510,7 +557,7 @@ templates:
       abi: UniswapV3Pool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: ./src/mappings/uniswapV3/pool.ts
       entities:

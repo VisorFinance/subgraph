@@ -1,17 +1,19 @@
-import { log, Address, dataSource } from '@graphprotocol/graph-ts'
+/* eslint-disable prefer-const */
+import { Address, BigInt, dataSource } from '@graphprotocol/graph-ts'
 import { ERC20 } from "../../generated/UniswapV3HypervisorFactory/ERC20"
 import { ERC20SymbolBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20SymbolBytes'
 import { ERC20NameBytes } from '../../generated/UniswapV3HypervisorFactory/ERC20NameBytes'
 import { StaticTokenDefinition } from './staticTokenDefinition'
 import { BaseTokenDefinition } from './baseTokenDefinition'
+import { getOrCreateHypervisor } from './uniswapV3/hypervisor'
 import { 
   Token,
   StakedToken,
   RewardedToken,
-  UniswapV3Pool,
-  UniswapV3Hypervisor,
   UniswapV3HypervisorConversion 
 } from "../../generated/schema"
+import { UniswapV3Pool as PoolTemplate } from "../../generated/templates";
+import { getOrCreatePool } from "./uniswapV3/pool";
 import { ZERO_BI, ZERO_BD, ADDRESS_ZERO, DEFAULT_DECIMAL, constantAddresses } from "./constants"
 
 
@@ -103,18 +105,21 @@ export function getOrCreateToken(tokenAddress: Address): Token {
   return token as Token
 }
 
-export function createStakedToken(vaultAddress: Address, tokenAddress: Address): StakedToken {
+export function getOrCreateStakedToken(vaultAddress: Address, tokenAddress: Address): StakedToken {
 
   let token = getOrCreateToken(tokenAddress)
   token.save()
 
   let stakedTokenId = vaultAddress.toHexString() + "-" + tokenAddress.toHexString() 
-  let stakedToken = new StakedToken(stakedTokenId)
-  stakedToken.token = tokenAddress.toHexString()
-  stakedToken.visor = vaultAddress.toHexString()
-  stakedToken.amount = ZERO_BI
+  let stakedToken = StakedToken.load(stakedTokenId)
+  if (stakedToken == null) {
+    stakedToken = new StakedToken(stakedTokenId)
+    stakedToken.token = tokenAddress.toHexString()
+    stakedToken.visor = vaultAddress.toHexString()
+    stakedToken.amount = ZERO_BI
+  }
 
-  return stakedToken
+  return stakedToken as StakedToken
 }
 
 export function createRewardedToken(vaultAddress: Address, tokenAddress: Address): RewardedToken {
@@ -128,7 +133,7 @@ export function createRewardedToken(vaultAddress: Address, tokenAddress: Address
   rewardedToken.visor = vaultAddress.toHexString()
   rewardedToken.amount = ZERO_BI
 
-  return rewardedToken
+  return rewardedToken as RewardedToken
 }
 
 function isToken(tokenAddress: Address, refAddress: Address): boolean {
@@ -155,8 +160,8 @@ export function isNullEthValue(value: string): boolean {
 
 export function createConversion(address: string): void {
 
-  let hypervisor = UniswapV3Hypervisor.load(address)
-  let pool = UniswapV3Pool.load(hypervisor.pool)
+  let hypervisor = getOrCreateHypervisor(Address.fromString(address), BigInt.fromI32(0))
+  let pool = getOrCreatePool(Address.fromString(hypervisor.pool))
   let conversion = UniswapV3HypervisorConversion.load(address)
   // match with USDC and lookup pool address
 
@@ -197,5 +202,13 @@ export function createConversion(address: string): void {
     conversion.priceBaseInUSD = ZERO_BD
     conversion.hypervisor = address
     conversion.save()
+
+    if (conversion.usdPool != ADDRESS_ZERO) {
+      let usdPoolAddress = Address.fromString(conversion.usdPool)
+      let pool = getOrCreatePool(usdPoolAddress)
+      pool.save()
+      PoolTemplate.create(usdPoolAddress)
+    }
+    
   }
 }
