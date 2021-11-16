@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { store } from '@graphprotocol/graph-ts'
 import { visorAddressFromTokenId } from "../utils/visor"
 import { 
@@ -29,11 +30,13 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
 }
 
 export function handleInstanceAdded(event: InstanceAdded): void {
+	let visorString = event.params.instance.toHex()
 	let ownerString = event.transaction.from.toHex()
 	let user = getOrCreateUser(ownerString)
+	user.activeVisor = visorString
 	user.save()
 
-	let visor = getOrCreateVisor(event.params.instance.toHex())
+	let visor = getOrCreateVisor(visorString)
 	visor.owner = ownerString
 	visor.save()
 }

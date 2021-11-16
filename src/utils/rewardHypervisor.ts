@@ -1,4 +1,4 @@
-import { BigInt, store } from '@graphprotocol/graph-ts'
+import { BigInt } from '@graphprotocol/graph-ts'
 import { getOrCreateVisrToken } from './visrToken'
 import { ZERO_BI, REWARD_HYPERVISOR_ADDRESS } from './constants'
 import { RewardHypervisor, RewardHypervisorShare } from "../../generated/schema"
@@ -42,10 +42,8 @@ export function decreaseRewardHypervisorShares(visorAddress: string, shares: Big
 	let id = REWARD_HYPERVISOR_ADDRESS + "-" + visorAddress
 
 	let vVisrShare = RewardHypervisorShare.load(id)
-	vVisrShare.shares -= shares
-	if (vVisrShare.shares == ZERO_BI) {
-		store.remove('RewardHypervisorShare', id)
-	} else {
+	if (vVisrShare != null) {
+		vVisrShare.shares -= shares
 		vVisrShare.save()
 	}
 }

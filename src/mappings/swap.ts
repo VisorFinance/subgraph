@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { BigInt } from '@graphprotocol/graph-ts'
 import { SwapVISR } from '../../generated/SwapContract/SwapContract'
 import { getVisrRateInUSDC } from '../utils/pricing'

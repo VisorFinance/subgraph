@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Address, store } from '@graphprotocol/graph-ts'
 import { 
 	Deposit as DepositEvent,
@@ -34,7 +35,7 @@ export function handleDeposit(event: DepositEvent): void {
 
 	// Create deposit event
 	let deposit = createDeposit(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
@@ -80,7 +81,7 @@ export function handleRebalance(event: RebalanceEvent): void {
 	
 	// Create rebalance
 	let rebalance = createRebalance(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)
@@ -150,7 +151,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 
 	// Create Withdraw event
 	let withdraw = createWithdraw(event)
-	let conversion = UniswapV3HypervisorConversion.load(hypervisorId)
+	let conversion = UniswapV3HypervisorConversion.load(hypervisorId) as UniswapV3HypervisorConversion
 
 	let price = getExchangeRate(Address.fromString(hypervisor.pool), conversion.baseTokenIndex)
 	let baseTokenInUSDC = getBaseTokenRateInUSDC(hypervisorId)

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { ethereum, BigInt } from '@graphprotocol/graph-ts'
 import {
     EthDayData,
@@ -64,9 +65,9 @@ export function updateVisrTokenDayData(distributed: BigInt, timestamp: BigInt, u
 
 
 export function updateAndGetUniswapV3HypervisorDayData(hypervisorAddress: string): UniswapV3HypervisorDayData {
-    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress) as UniswapV3Hypervisor
     // hypervisorDayData.adjustedFeesReinvestedUSD = hypervisor.adjustedFeesReinvestedUSD
-
+    
     let hypervisorDayDataUTC = getOrCreateHypervisorDayData(hypervisorAddress, ZERO_BI)
     hypervisorDayDataUTC.totalSupply = hypervisor.totalSupply
     hypervisorDayDataUTC.tvl0 = hypervisor.tvl0
@@ -85,7 +86,7 @@ export function updateAndGetUniswapV3HypervisorDayData(hypervisorAddress: string
 
 
 function getOrCreateHypervisorDayData(hypervisorAddress: string, utcDiffHours: BigInt): UniswapV3HypervisorDayData {
-    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress)
+    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress) as UniswapV3Hypervisor
 
     let utcDiffSeconds = utcDiffHours * SECONDS_IN_HOUR
     let timezone = (utcDiffHours == ZERO_BI) ? 'UTC' : "UTC" + utcDiffHours.toString() 

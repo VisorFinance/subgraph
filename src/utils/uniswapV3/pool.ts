@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { log, Address } from "@graphprotocol/graph-ts";
 import { UniswapV3Pool as PoolContract } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3Pool";
 import { UniswapV3Pool } from "../../../generated/schema";

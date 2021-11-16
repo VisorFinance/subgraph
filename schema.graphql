@@ -74,9 +74,9 @@ type Factory @entity {
 type Hypervisor @entity {
   id: ID!
   owner: Bytes!
-  stakingToken: Token
+  stakingToken: Token!
   totalStakedAmount: BigInt
-  rewardToken: Token
+  rewardToken: Token!
   rewardPool: Bytes
   rewardPoolAmount: BigInt
   powerSwitch: Bytes
@@ -92,7 +92,6 @@ type Visor @entity {
     visrDeposited: BigInt!
     visrEarnedRealized: BigInt!
     ethEarned: BigInt!
-    vVisrShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
     staked: [StakedToken!] @derivedFrom(field: "visor")
     rewardClaimed: [RewardedToken!] @derivedFrom(field: "visor")
     rewardHypervisorShares: [RewardHypervisorShare!]! @derivedFrom(field: "visor")
@@ -109,6 +108,7 @@ type VisorTemplate @entity {
 
 type User @entity {
   id: ID!
+  activeVisor: Visor!
   visorsOwned: [Visor!] @derivedFrom(field: "owner")  # Visors owned by this user
   visorsApproved: [Visor!] @derivedFrom(field: "operator")  # Visors where this user is approved as an operator
   operators: [OwnerOperator!] @derivedFrom(field: "operator")  # Operators this users delegates to
@@ -330,4 +330,14 @@ type UniswapV3HypervisorConversion @entity {
   usdTokenIndex: Int!
   priceTokenInBase: BigDecimal!
   priceBaseInUSD: BigDecimal!
+}
+
+type RewardLog @entity {
+  id: ID!
+  address: String!
+  visrStaked: String!
+  visrEarned: String!
+  amount: String!
+  before: String!
+  after: String!
 }

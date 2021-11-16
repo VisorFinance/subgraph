@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Address } from "@graphprotocol/graph-ts"
   
 // Initialize a Token Definition with the attributes

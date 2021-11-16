@@ -23,5 +23,12 @@
             "address": "0x0e0f25eefe70e6f7ceb9a943be9191c312d23f6b",
             "startBlock": 1923369
         }
+    ],
+    "uniswapV3PoolOrphan": [
+        {
+            "name": "WETH-VISR",
+            "address": "0x4985C5b657d916bA745Afb16ace048c0a03ca2f5",
+            "startBlock": 746075
+        }
     ]
 }

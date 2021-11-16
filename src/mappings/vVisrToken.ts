@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Address, } from '@graphprotocol/graph-ts'
 import { ADDRESS_ZERO } from '../utils/constants'
 import { Transfer as TransferEvent } from "../../generated/VisrToken/ERC20"

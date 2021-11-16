@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Address } from '@graphprotocol/graph-ts'
 import { HypervisorCreated } from "../../../generated/UniswapV3HypervisorFactory/UniswapV3HypervisorFactory"
 import { UniswapV3Hypervisor as HypervisorTemplate } from "../../../generated/templates"

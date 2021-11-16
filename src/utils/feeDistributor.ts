@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { BigInt } from '@graphprotocol/graph-ts'
 import { MultisendEtherCall, Multisended } from "../../generated/FeeDistributor/FeeDistributor"
 import { EthToken, EthDistribution } from '../../generated/schema'

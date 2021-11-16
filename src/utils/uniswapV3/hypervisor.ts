@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { UniswapV3Hypervisor as HypervisorContract } from "../../../generated/templates/UniswapV3Hypervisor/UniswapV3Hypervisor";
 import {
@@ -163,7 +164,7 @@ export function getOrCreateHypervisorShare(
       visor.hypervisorCount += ONE_BI;
       visor.save();
     }
-    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress);
+    let hypervisor = UniswapV3Hypervisor.load(hypervisorAddress) as UniswapV3Hypervisor;
     hypervisor.visorCount += ONE_BI;
     hypervisor.save();
   }

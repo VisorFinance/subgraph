@@ -61,6 +61,18 @@
             "startBlock": 13328071
         }
     ],
+    "uniswapV3PoolOrphan": [
+        {
+            "name": "WETH-USDC",
+            "address": "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
+            "startBlock": 12370624
+        },
+        {
+            "name": "WETH-VISR",
+            "address": "0x9a9cf34c3892acdb61fb7ff17941d8d81d279c75",
+            "startBlock": 12376475
+        }
+    ],
     "feeDistributor": [
         {
             "name": "FeeDistributor",
