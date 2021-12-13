@@ -95,10 +95,15 @@
             "address": "0x85a5326F08c44eC673e4bFc666b737f7f3Dc6b37",
             "startBlock": 13642283
         },
-          {
+        {
             "name": "BPRO-ETH-10000",
             "address": "0x46B7602e4DAD6F71dAe532588110e2711682ACA3",
             "startBlock": 13642187
+        },
+        {
+            "name": "BABL-ETH 3000",
+            "address": "0xF19F91d7889668A533F14d076aDc187be781a458",
+            "startBlock": "13691975"
         }
     ],
     "uniswapV3PoolOrphan": [
@@ -111,6 +116,13 @@
             "name": "WETH-VISR",
             "address": "0x9a9cf34c3892acdb61fb7ff17941d8d81d279c75",
             "startBlock": 12376475
+        }
+    ],
+    "hypeRegistry": [
+        {
+            "name": "HypeRegistry",
+            "address": "0x31ccdb5bd6322483bebd0787e1dabd1bf1f14946",
+            "startBlock": 13659998
         }
     ],
     "feeDistributor": [
